@@ -192,15 +192,12 @@ abstract class AppLocalizations {
   String get compareQuantity;
   String get compareEffectivePrice;
   String get compareUnitPrice;
+  String get compareStoreName;
   String get compareAddRow;
   String get compareDeleteRow;
-  String get compareAddToHistory;
-  String get compareViewHistory;
+  String get compareSave;
   String get compareSaveSuccess;
   String get compareSaveErrorNameRequired;
-  String get compareHistorySummaryCount;
-  String get compareHistorySummaryMinUnitPrice;
-  String get compareHistorySummaryLatest;
   String get compareBasePriceRequired;
   String get compareQuantityRequired;
 

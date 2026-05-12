@@ -178,7 +178,6 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<CompareViewModel>(
     () => CompareViewModel(
       sl<SaveProductHistoryUseCase>(),
-      sl<GetProductSummaryUseCase>(),
     ),
   );
   sl.registerLazySingleton<ProductListViewModel>(

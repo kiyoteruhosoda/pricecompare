@@ -15,28 +15,33 @@ class ComparePage extends StatefulWidget {
 
 class _ComparePageState extends State<ComparePage> {
   late final CompareViewModel _vm;
-  final List<_SlotControllers> _slotControllers = [];
+  final TextEditingController _productNameCtrl = TextEditingController();
+  // rowId → controllers
+  final Map<String, _RowControllers> _rowCtrlMap = {};
 
   @override
   void initState() {
     super.initState();
     _vm = sl<CompareViewModel>();
-    // Ensure exactly 2 rows exist.
-    while (_vm.rows.length < 2) {
-      _vm.addRow();
-    }
-    for (final row in _vm.rows.take(2)) {
-      _slotControllers.add(_SlotControllers.fromRow(row));
+    _productNameCtrl.text = _vm.productName;
+    for (final row in _vm.rows) {
+      _rowCtrlMap[row.id] = _RowControllers.fromRow(row);
     }
   }
 
   @override
   void dispose() {
-    for (final c in _slotControllers) {
+    _productNameCtrl.dispose();
+    for (final c in _rowCtrlMap.values) {
       c.dispose();
     }
     super.dispose();
   }
+
+  _RowControllers _ctrlFor(String id) =>
+      _rowCtrlMap.putIfAbsent(id, () => _RowControllers());
+
+  void _removeCtrl(String id) => _rowCtrlMap.remove(id)?.dispose();
 
   @override
   Widget build(BuildContext context) {
@@ -45,85 +50,96 @@ class _ComparePageState extends State<ComparePage> {
       listenable: _vm,
       builder: (context, _) {
         _handleStateChange(context, l10n);
-        final rows = _vm.rows.take(2).toList();
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.pageMargin),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Slot A ──────────────────────────────────────────────
-              if (rows.isNotEmpty)
-                _SlotCard(
-                  label: 'A',
-                  row: rows[0],
-                  controllers: _slotControllers[0],
-                  onBasePriceChanged: (v) =>
-                      _vm.updateBasePrice(rows[0].id, v),
-                  onDiscountChanged: (v) =>
-                      _vm.updateSaleDiscount(rows[0].id, v ?? 0),
-                  onPointsChanged: (v) =>
-                      _vm.updatePoints(rows[0].id, v ?? 0),
-                  onQuantityChanged: (v) =>
-                      _vm.updateQuantity(rows[0].id, v),
-                  onNameChanged: (v) =>
-                      _vm.updateProductName(rows[0].id, v),
-                  onSave: () => _vm.saveRow(rows[0].id),
+        return Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageMargin,
+                AppSpacing.pageMargin,
+                AppSpacing.pageMargin,
+                // Extra bottom padding for the FABs
+                AppSpacing.pageMargin + 80,
+              ),
+              children: [
+                // ── 商品名 ───────────────────────────────────────────
+                _ProductNameField(
+                  controller: _productNameCtrl,
+                  l10n: l10n,
+                  onChanged: _vm.updateProductName,
                 ),
 
-              const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
 
-              // ── vs divider ──────────────────────────────────────────
-              if (rows.length >= 2)
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm),
-                      child: Text(
-                        'vs',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
+                // ── 各店舗行 ─────────────────────────────────────────
+                ..._vm.rows.map((row) {
+                  final ctrl = _ctrlFor(row.id);
+                  return Padding(
+                    padding:
+                        const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _StoreRowCard(
+                      row: row,
+                      controllers: ctrl,
+                      canDelete: _vm.rows.length > 1,
+                      onDelete: () {
+                        _removeCtrl(row.id);
+                        _vm.removeRow(row.id);
+                      },
+                      onStoreNameChanged: (v) =>
+                          _vm.updateStoreName(row.id, v),
+                      onBasePriceChanged: (v) =>
+                          _vm.updateBasePrice(row.id, v),
+                      onDiscountChanged: (v) =>
+                          _vm.updateSaleDiscount(row.id, v ?? 0),
+                      onPointsChanged: (v) =>
+                          _vm.updatePoints(row.id, v ?? 0),
+                      onQuantityChanged: (v) =>
+                          _vm.updateQuantity(row.id, v),
+                      l10n: l10n,
                     ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
+                  );
+                }),
+              ],
+            ),
 
-              const SizedBox(height: AppSpacing.md),
-
-              // ── Slot B ──────────────────────────────────────────────
-              if (rows.length >= 2)
-                _SlotCard(
-                  label: 'B',
-                  row: rows[1],
-                  controllers: _slotControllers[1],
-                  onBasePriceChanged: (v) =>
-                      _vm.updateBasePrice(rows[1].id, v),
-                  onDiscountChanged: (v) =>
-                      _vm.updateSaleDiscount(rows[1].id, v ?? 0),
-                  onPointsChanged: (v) =>
-                      _vm.updatePoints(rows[1].id, v ?? 0),
-                  onQuantityChanged: (v) =>
-                      _vm.updateQuantity(rows[1].id, v),
-                  onNameChanged: (v) =>
-                      _vm.updateProductName(rows[1].id, v),
-                  onSave: () => _vm.saveRow(rows[1].id),
-                ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // ── Result banner ────────────────────────────────────────
-              if (rows.length >= 2)
-                _ResultBanner(rowA: rows[0], rowB: rows[1], l10n: l10n),
-            ],
-          ),
+            // ── FAB群 ────────────────────────────────────────────────
+            Positioned(
+              right: AppSpacing.pageMargin,
+              bottom: AppSpacing.pageMargin,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // 保存ボタン
+                  FloatingActionButton.extended(
+                    heroTag: 'save',
+                    onPressed: _vm.state == CompareState.saving
+                        ? null
+                        : _vm.saveAll,
+                    icon: _vm.state == CompareState.saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_outlined),
+                    label: Text(l10n.compareSave),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  // 追加ボタン
+                  FloatingActionButton.extended(
+                    heroTag: 'add',
+                    onPressed: _vm.addRow,
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.compareAddRow),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.secondaryContainer,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
+                ],
+              ),
+            ),
+          ],
         );
       },
     );
@@ -162,39 +178,68 @@ class _ComparePageState extends State<ComparePage> {
   }
 }
 
-// ─── Slot card ────────────────────────────────────────────────────────────────
+// ─── 商品名フィールド ──────────────────────────────────────────────────────────
 
-class _SlotCard extends StatelessWidget {
-  const _SlotCard({
-    required this.label,
+class _ProductNameField extends StatelessWidget {
+  const _ProductNameField({
+    required this.controller,
+    required this.l10n,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final AppLocalizations l10n;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: l10n.compareProductName,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.shopping_basket_outlined),
+      ),
+      textInputAction: TextInputAction.next,
+      onChanged: onChanged,
+    );
+  }
+}
+
+// ─── 店舗行カード ──────────────────────────────────────────────────────────────
+
+class _StoreRowCard extends StatelessWidget {
+  const _StoreRowCard({
     required this.row,
     required this.controllers,
+    required this.canDelete,
+    required this.onDelete,
+    required this.onStoreNameChanged,
     required this.onBasePriceChanged,
     required this.onDiscountChanged,
     required this.onPointsChanged,
     required this.onQuantityChanged,
-    required this.onNameChanged,
-    required this.onSave,
+    required this.l10n,
   });
 
-  final String label;
   final CompareRow row;
-  final _SlotControllers controllers;
+  final _RowControllers controllers;
+  final bool canDelete;
+  final VoidCallback onDelete;
+  final ValueChanged<String> onStoreNameChanged;
   final ValueChanged<double?> onBasePriceChanged;
   final ValueChanged<double?> onDiscountChanged;
   final ValueChanged<double?> onPointsChanged;
   final ValueChanged<double?> onQuantityChanged;
-  final ValueChanged<String> onNameChanged;
-  final VoidCallback onSave;
+  final AppLocalizations l10n;
 
   bool get _hasResult =>
       row.basePrice != null && row.quantity != null && row.quantity! > 0;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
     final isBest = row.isBest && _hasResult;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       color: isBest ? AppColors.statusSuccessBg : null,
@@ -209,47 +254,56 @@ class _SlotCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Card header ──────────────────────────────────────────
+            // ── ヘッダー行 ─────────────────────────────────────────
             Row(
               children: [
-                CircleAvatar(
-                  radius: 14,
-                  backgroundColor:
-                      isBest ? AppColors.statusSuccess : colorScheme.primary,
+                if (isBest) ...[
+                  Icon(Icons.star, color: AppColors.statusSuccess, size: 20),
+                  const SizedBox(width: AppSpacing.xs),
+                ],
+                Expanded(
                   child: Text(
-                    label,
-                    style: TextStyle(
-                      color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
+                    isBest
+                        ? '${_formatUnitPrice(row.unitPrice)}  最安値'
+                        : (_hasResult ? _formatUnitPrice(row.unitPrice) : ''),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: isBest
+                              ? AppColors.statusSuccess
+                              : colorScheme.onSurfaceVariant,
+                          fontWeight:
+                              isBest ? FontWeight.bold : FontWeight.normal,
+                        ),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                if (isBest) ...[
-                  Icon(Icons.star, color: AppColors.statusSuccess, size: 18),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    _formatUnitPrice(row.unitPrice),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.statusSuccess,
-                          fontWeight: FontWeight.bold,
-                        ),
+                if (canDelete)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: l10n.compareDeleteRow,
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: AppSpacing.minTapTarget,
+                      minHeight: AppSpacing.minTapTarget,
+                    ),
                   ),
-                ] else if (_hasResult) ...[
-                  Text(
-                    _formatUnitPrice(row.unitPrice),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
               ],
             ),
-
             const SizedBox(height: AppSpacing.sm),
 
-            // ── Inputs ───────────────────────────────────────────────
+            // ── 店舗名 ─────────────────────────────────────────────
+            TextField(
+              controller: controllers.storeName,
+              decoration: InputDecoration(
+                labelText: l10n.compareStoreName,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              textInputAction: TextInputAction.next,
+              onChanged: onStoreNameChanged,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+
+            // ── 販売価格 ───────────────────────────────────────────
             _numField(
               context,
               label: l10n.compareBasePrice,
@@ -257,6 +311,8 @@ class _SlotCard extends StatelessWidget {
               onChanged: (v) => onBasePriceChanged(_parseDouble(v)),
             ),
             const SizedBox(height: AppSpacing.sm),
+
+            // ── セール値引き / ポイント ────────────────────────────
             Row(
               children: [
                 Expanded(
@@ -279,6 +335,8 @@ class _SlotCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
+
+            // ── 数量 ───────────────────────────────────────────────
             _numField(
               context,
               label: l10n.compareQuantity,
@@ -286,70 +344,26 @@ class _SlotCard extends StatelessWidget {
               onChanged: (v) => onQuantityChanged(_parseDouble(v)),
             ),
 
-            // ── Computed result ──────────────────────────────────────
+            // ── 計算結果 ───────────────────────────────────────────
             if (_hasResult) ...[
               const SizedBox(height: AppSpacing.sm),
               const Divider(height: 1),
               const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(l10n.compareEffectivePrice,
-                      style: Theme.of(context).textTheme.bodySmall),
-                  Text(
-                    row.effectivePrice != null
-                        ? _formatPrice(row.effectivePrice!)
-                        : '—',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+              _resultRow(
+                context,
+                label: l10n.compareEffectivePrice,
+                value: row.effectivePrice != null
+                    ? _formatPrice(row.effectivePrice!)
+                    : '—',
               ),
               const SizedBox(height: AppSpacing.xs),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.compareUnitPrice,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  Text(
-                    _formatUnitPrice(row.unitPrice),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isBest ? AppColors.statusSuccess : null,
-                        ),
-                  ),
-                ],
+              _resultRow(
+                context,
+                label: l10n.compareUnitPrice,
+                value: _formatUnitPrice(row.unitPrice),
+                highlight: isBest,
               ),
             ],
-
-            const SizedBox(height: AppSpacing.sm),
-
-            // ── Name + save ──────────────────────────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controllers.name,
-                    decoration: InputDecoration(
-                      labelText: l10n.compareProductName,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    textInputAction: TextInputAction.done,
-                    onChanged: onNameChanged,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                FilledButton.icon(
-                  icon: const Icon(Icons.save_outlined, size: 18),
-                  label: Text(l10n.compareAddToHistory),
-                  onPressed: _hasResult ? onSave : null,
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -378,6 +392,28 @@ class _SlotCard extends StatelessWidget {
     );
   }
 
+  Widget _resultRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+    bool highlight = false,
+  }) {
+    final style = Theme.of(context).textTheme.bodyMedium;
+    final valueStyle = highlight
+        ? style?.copyWith(
+            color: AppColors.statusSuccess,
+            fontWeight: FontWeight.bold,
+          )
+        : style;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: style),
+        Text(value, style: valueStyle),
+      ],
+    );
+  }
+
   static double? _parseDouble(String v) {
     final t = v.trim();
     if (t.isEmpty) return null;
@@ -393,86 +429,26 @@ class _SlotCard extends StatelessWidget {
   }
 }
 
-// ─── Result banner ─────────────────────────────────────────────────────────────
+// ─── コントローラーホルダー ────────────────────────────────────────────────────
 
-class _ResultBanner extends StatelessWidget {
-  const _ResultBanner({
-    required this.rowA,
-    required this.rowB,
-    required this.l10n,
-  });
-
-  final CompareRow rowA;
-  final CompareRow rowB;
-  final AppLocalizations l10n;
-
-  bool get _bothReady =>
-      rowA.unitPrice != null && rowB.unitPrice != null;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_bothReady) return const SizedBox.shrink();
-
-    final winner = rowA.isBest ? 'A' : 'B';
-    final diff = (rowA.unitPrice! - rowB.unitPrice!).abs();
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.statusSuccessBg,
-        borderRadius: AppRadius.lgBorder,
-        border: Border.all(color: AppColors.statusSuccess),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.emoji_events, color: AppColors.statusSuccess, size: 28),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$winner が安い',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.statusSuccess,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                Text(
-                  '差額 ¥${NumberFormat('#,##0.##').format(diff)}/個',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.statusSuccess,
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Controllers holder ────────────────────────────────────────────────────────
-
-class _SlotControllers {
-  _SlotControllers()
-      : name = TextEditingController(),
+class _RowControllers {
+  _RowControllers()
+      : storeName = TextEditingController(),
         basePrice = TextEditingController(),
         saleDiscount = TextEditingController(),
         points = TextEditingController(),
         quantity = TextEditingController();
 
-  factory _SlotControllers.fromRow(CompareRow row) {
-    return _SlotControllers()
-      ..name.text = row.productName
+  factory _RowControllers.fromRow(CompareRow row) {
+    return _RowControllers()
+      ..storeName.text = row.storeName
       ..basePrice.text = _fmt(row.basePrice)
       ..saleDiscount.text = row.saleDiscount == 0 ? '' : _fmt(row.saleDiscount)
       ..points.text = row.points == 0 ? '' : _fmt(row.points)
       ..quantity.text = _fmt(row.quantity);
   }
 
-  final TextEditingController name;
+  final TextEditingController storeName;
   final TextEditingController basePrice;
   final TextEditingController saleDiscount;
   final TextEditingController points;
@@ -484,7 +460,7 @@ class _SlotControllers {
   }
 
   void dispose() {
-    name.dispose();
+    storeName.dispose();
     basePrice.dispose();
     saleDiscount.dispose();
     points.dispose();

@@ -297,23 +297,17 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get compareUnitPrice => '単価';
   @override
-  String get compareAddRow => '追加';
+  String get compareStoreName => '店舗名';
+  @override
+  String get compareAddRow => '店舗を追加';
   @override
   String get compareDeleteRow => '削除';
   @override
-  String get compareAddToHistory => '履歴に追加';
-  @override
-  String get compareViewHistory => '履歴を見る';
+  String get compareSave => '保存';
   @override
   String get compareSaveSuccess => '履歴に保存しました';
   @override
   String get compareSaveErrorNameRequired => '保存するには商品名が必要です';
-  @override
-  String get compareHistorySummaryCount => '件';
-  @override
-  String get compareHistorySummaryMinUnitPrice => '最安単価';
-  @override
-  String get compareHistorySummaryLatest => '最新記録';
   @override
   String get compareBasePriceRequired => '販売価格を入力してください';
   @override

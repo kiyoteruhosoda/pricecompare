@@ -298,23 +298,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get compareUnitPrice => 'Unit price';
   @override
-  String get compareAddRow => 'Add';
+  String get compareStoreName => 'Store name';
+  @override
+  String get compareAddRow => 'Add store';
   @override
   String get compareDeleteRow => 'Remove';
   @override
-  String get compareAddToHistory => 'Save to history';
-  @override
-  String get compareViewHistory => 'View history';
+  String get compareSave => 'Save';
   @override
   String get compareSaveSuccess => 'Saved to history';
   @override
   String get compareSaveErrorNameRequired => 'Product name is required to save';
-  @override
-  String get compareHistorySummaryCount => 'records';
-  @override
-  String get compareHistorySummaryMinUnitPrice => 'Best unit price';
-  @override
-  String get compareHistorySummaryLatest => 'Latest';
   @override
   String get compareBasePriceRequired => 'Price is required';
   @override
