@@ -261,4 +261,123 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonError => 'An error occurred';
   @override
   String get commonEmpty => 'No data';
+  @override
+  String get commonCancel => 'Cancel';
+  @override
+  String get commonDelete => 'Delete';
+  @override
+  String get commonSave => 'Save';
+  @override
+  String get commonConfirm => 'Confirm';
+
+  // ─── Bottom navigation ────────────────────────────────────────────────
+  @override
+  String get navCompare => 'Compare';
+  @override
+  String get navProducts => 'Products';
+
+  // ─── Compare screen ───────────────────────────────────────────────────
+  @override
+  String get compareTitle => 'Compare';
+  @override
+  String get compareProductName => 'Product name';
+  @override
+  String get compareBasePrice => 'Price';
+  @override
+  String get compareSaleDiscount => 'Discount';
+  @override
+  String get comparePoints => 'Points';
+  @override
+  String get compareQuantity => 'Quantity';
+  @override
+  String get compareEffectivePrice => 'Net price';
+  @override
+  String get compareUnitPrice => 'Unit price';
+  @override
+  String get compareAddRow => 'Add';
+  @override
+  String get compareDeleteRow => 'Remove';
+  @override
+  String get compareAddToHistory => 'Save to history';
+  @override
+  String get compareViewHistory => 'View history';
+  @override
+  String get compareSaveSuccess => 'Saved to history';
+  @override
+  String get compareSaveErrorNameRequired => 'Product name is required to save';
+  @override
+  String get compareHistorySummaryCount => 'records';
+  @override
+  String get compareHistorySummaryMinUnitPrice => 'Best unit price';
+  @override
+  String get compareHistorySummaryLatest => 'Latest';
+  @override
+  String get compareBasePriceRequired => 'Price is required';
+  @override
+  String get compareQuantityRequired => 'Quantity is required';
+
+  // ─── Product list screen ──────────────────────────────────────────────
+  @override
+  String get productsTitle => 'Products';
+  @override
+  String get productsSearchHint => 'Search products';
+  @override
+  String get productsEmpty => 'No saved products yet.\nCompare prices and save to history.';
+  @override
+  String get productsHistoryCount => 'records';
+  @override
+  String get productsMinUnitPrice => 'Best';
+  @override
+  String get productsLatestDate => 'Latest';
+  @override
+  String get productsDeleteConfirmTitle => 'Delete product?';
+  @override
+  String get productsDeleteConfirmBody =>
+      'This will delete the product and all its history. This cannot be undone.';
+
+  // ─── Product detail screen ────────────────────────────────────────────
+  @override
+  String get productDetailHistoryCountLabel => 'History';
+  @override
+  String get productDetailHistoryCount => 'records';
+  @override
+  String get productDetailMinUnitPrice => 'Best unit price';
+  @override
+  String get productDetailLatestUnitPrice => 'Latest unit price';
+  @override
+  String get productDetailHistoryEmpty => 'No history records.';
+  @override
+  String get productDetailDeleteHistoryConfirmTitle => 'Delete history?';
+  @override
+  String get productDetailDeleteHistoryConfirmBody =>
+      'This history record will be permanently deleted.';
+
+  // ─── History detail screen ────────────────────────────────────────────
+  @override
+  String get historyDetailTitle => 'History detail';
+  @override
+  String get historyDetailStoreName => 'Store';
+  @override
+  String get historyDetailBasePrice => 'Price';
+  @override
+  String get historyDetailSaleDiscount => 'Discount';
+  @override
+  String get historyDetailPoints => 'Points';
+  @override
+  String get historyDetailQuantity => 'Quantity';
+  @override
+  String get historyDetailEffectivePrice => 'Net price';
+  @override
+  String get historyDetailUnitPrice => 'Unit price';
+  @override
+  String get historyDetailRecordedAt => 'Recorded';
+  @override
+  String get historyDetailMemo => 'Memo';
+  @override
+  String get historyDetailDeleteConfirmTitle => 'Delete history?';
+  @override
+  String get historyDetailDeleteConfirmBody =>
+      'This history record will be permanently deleted.';
+  @override
+  String get historyDetailDeleteSuccess => 'Deleted';
 }

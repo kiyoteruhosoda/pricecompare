@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutterbase/app/di/service_locator.dart';
+import 'package:flutterbase/presentation/pages/compare_page.dart';
+import 'package:flutterbase/presentation/pages/product_list_page.dart';
 import 'package:flutterbase/presentation/viewmodels/debug_settings_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/language_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/theme_viewmodel.dart';
@@ -10,7 +12,7 @@ import 'package:flutterbase/shared/logging/log_level.dart';
 import 'package:flutterbase/shared/theme/theme.dart';
 import 'package:flutterbase/shared/value_objects/app_language.dart';
 
-/// Main screen with bottom navigation.
+/// Main screen with bottom navigation (Compare / Products).
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -26,46 +28,32 @@ class _MainPageState extends State<MainPage> {
     final l10n = AppLocalizations.of(context);
     final tabs = <_TabItem>[
       _TabItem(
-        label: l10n.navHome,
-        icon: Icons.home_outlined,
-        selectedIcon: Icons.home,
+        label: l10n.navCompare,
+        icon: Icons.compare_arrows_outlined,
+        selectedIcon: Icons.compare_arrows,
       ),
       _TabItem(
-        label: l10n.navSearch,
-        icon: Icons.search_outlined,
-        selectedIcon: Icons.search,
-      ),
-      _TabItem(
-        label: l10n.navSettings,
-        icon: Icons.settings_outlined,
-        selectedIcon: Icons.settings,
+        label: l10n.navProducts,
+        icon: Icons.inventory_2_outlined,
+        selectedIcon: Icons.inventory_2,
       ),
     ];
+    final tabTitles = [l10n.navCompare, l10n.navProducts];
     return PopScope(
-      // Allow pop only when already on Home tab; otherwise switch to Home.
       canPop: _selectedIndex == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          setState(() => _selectedIndex = 0);
-        }
+        if (!didPop) setState(() => _selectedIndex = 0);
       },
       child: Scaffold(
-        appBar: AppMainHeader(
-          title: l10n.appName,
+        appBar: AppBar(
+          title: Text(tabTitles[_selectedIndex]),
           leading: Builder(
-            builder: (context) => IconButton(
+            builder: (ctx) => IconButton(
               icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
+              onPressed: () => Scaffold.of(ctx).openDrawer(),
               tooltip: l10n.commonMenu,
             ),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () {},
-              tooltip: l10n.commonNotifications,
-            ),
-          ],
         ),
         drawer: ListenableBuilder(
           listenable: sl<DebugSettingsViewModel>(),
@@ -76,8 +64,8 @@ class _MainPageState extends State<MainPage> {
               headerSubtitle: AppConfig.appTagline,
               items: [
                 AppDrawerItem(
-                  label: l10n.navHome,
-                  icon: Icons.home_outlined,
+                  label: l10n.navCompare,
+                  icon: Icons.compare_arrows_outlined,
                   isSelected: _selectedIndex == 0,
                   onTap: () {
                     setState(() => _selectedIndex = 0);
@@ -85,21 +73,21 @@ class _MainPageState extends State<MainPage> {
                   },
                 ),
                 AppDrawerItem(
-                  label: l10n.navSearch,
-                  icon: Icons.search_outlined,
+                  label: l10n.navProducts,
+                  icon: Icons.inventory_2_outlined,
                   isSelected: _selectedIndex == 1,
                   onTap: () {
                     setState(() => _selectedIndex = 1);
                     Navigator.of(context).pop();
                   },
                 ),
+                const AppDrawerItem.divider(),
                 AppDrawerItem(
                   label: l10n.navSettings,
                   icon: Icons.settings_outlined,
-                  isSelected: _selectedIndex == 2,
                   onTap: () {
-                    setState(() => _selectedIndex = 2);
                     Navigator.of(context).pop();
+                    _showSettings(context);
                   },
                 ),
                 const AppDrawerItem.divider(),
@@ -164,112 +152,25 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildTabContent() {
     return switch (_selectedIndex) {
-      0 => const _HomeContent(),
-      1 => const _SearchContent(),
-      2 => const _SettingsContent(),
-      _ => const _HomeContent(),
+      0 => const ComparePage(),
+      1 => const ProductListPage(),
+      _ => const ComparePage(),
     };
   }
-}
 
-// ─── Tab Content ─────────────────────────────────────────────────────────────
-
-class _HomeContent extends StatelessWidget {
-  const _HomeContent();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.pageMargin),
-      children: [
-        AppSectionHeader(
-          title: l10n.homeWelcomeTitle,
-          subtitle: AppConfig.homeSubtitle,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppConfig.homeCardTitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.homeCardBody,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppSectionHeader(title: l10n.homeComponentsTitle),
-        const SizedBox(height: AppSpacing.lg),
-        AppPrimaryButton(
-          label: l10n.homePrimaryButton,
-          onPressed: () {},
-          width: double.infinity,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        AppSecondaryButton(
-          label: l10n.homeSecondaryButton,
-          onPressed: () {},
-          width: double.infinity,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppTextField(
-          label: l10n.homeTextFieldLabel,
-          hint: l10n.homeTextFieldHint,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppListCard(
-          title: l10n.homeListCardTitle,
-          subtitle: l10n.homeListCardSubtitle,
-          leading: const Icon(Icons.article_outlined),
-          onTap: () {},
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        AppListCard(
-          title: l10n.homeListCardItem2,
-          subtitle: l10n.homeListCardSubtitle,
-          leading: const Icon(Icons.article_outlined),
-          onTap: () {},
-        ),
-      ],
+  void _showSettings(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _SettingsSheet(),
     );
   }
 }
 
-class _SearchContent extends StatelessWidget {
-  const _SearchContent();
+// ─── Settings bottom sheet ────────────────────────────────────────────────────
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.pageMargin),
-      child: Column(
-        children: [
-          AppTextField(
-            label: l10n.searchFieldLabel,
-            hint: l10n.searchFieldHint,
-            prefixIcon: const Icon(Icons.search),
-          ),
-          const SizedBox(height: AppSpacing.xxxl),
-          AppEmptyView(
-            message: l10n.searchEmptyMessage,
-            icon: Icons.search,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SettingsContent extends StatelessWidget {
-  const _SettingsContent();
+class _SettingsSheet extends StatelessWidget {
+  const _SettingsSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -277,168 +178,168 @@ class _SettingsContent extends StatelessWidget {
     final themeViewModel = sl<ThemeViewModel>();
     final languageViewModel = sl<LanguageViewModel>();
     final debugViewModel = sl<DebugSettingsViewModel>();
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.pageMargin),
-      children: [
-        AppSectionHeader(title: l10n.settingsTitle),
-        const SizedBox(height: AppSpacing.lg),
-        // ── Theme switcher ──────────────────────────────────────────
-        AppSectionHeader(title: l10n.settingsTheme),
-        const SizedBox(height: AppSpacing.sm),
-        ListenableBuilder(
-          listenable: themeViewModel,
-          builder: (context, _) => AppCard(
-            child: Column(
-              children: [
-                _ThemeOptionTile(
-                  label: l10n.settingsThemeLight,
-                  icon: Icons.light_mode_outlined,
-                  value: ThemeMode.light,
-                  groupValue: themeViewModel.themeMode,
-                  onChanged: themeViewModel.setThemeMode,
-                ),
-                const Divider(height: 1),
-                _ThemeOptionTile(
-                  label: l10n.settingsThemeDark,
-                  icon: Icons.dark_mode_outlined,
-                  value: ThemeMode.dark,
-                  groupValue: themeViewModel.themeMode,
-                  onChanged: themeViewModel.setThemeMode,
-                ),
-                const Divider(height: 1),
-                _ThemeOptionTile(
-                  label: l10n.settingsThemeSystem,
-                  icon: Icons.brightness_auto_outlined,
-                  value: ThemeMode.system,
-                  groupValue: themeViewModel.themeMode,
-                  onChanged: themeViewModel.setThemeMode,
-                ),
-              ],
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.7,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.all(AppSpacing.pageMargin),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                borderRadius: AppRadius.fullBorder,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        // ── Language switcher ───────────────────────────────────────
-        AppSectionHeader(title: l10n.settingsLanguage),
-        const SizedBox(height: AppSpacing.sm),
-        ListenableBuilder(
-          listenable: languageViewModel,
-          builder: (context, _) => AppCard(
-            child: Column(
-              children: [
-                _LanguageOptionTile(
-                  label: l10n.settingsLanguageSystem,
-                  icon: Icons.language_outlined,
-                  value: AppLanguage.system,
-                  groupValue: languageViewModel.language,
-                  onChanged: languageViewModel.setLanguage,
-                ),
-                const Divider(height: 1),
-                _LanguageOptionTile(
-                  label: l10n.settingsLanguageEnglish,
-                  icon: Icons.translate_outlined,
-                  value: AppLanguage.english,
-                  groupValue: languageViewModel.language,
-                  onChanged: languageViewModel.setLanguage,
-                ),
-                const Divider(height: 1),
-                _LanguageOptionTile(
-                  label: l10n.settingsLanguageJapanese,
-                  icon: Icons.translate_outlined,
-                  value: AppLanguage.japanese,
-                  groupValue: languageViewModel.language,
-                  onChanged: languageViewModel.setLanguage,
-                ),
-              ],
-            ),
-          ),
-        ),
-        // ── Developer section (only visible while debug is on) ───────
-        ListenableBuilder(
-          listenable: debugViewModel,
-          builder: (context, _) {
-            if (!debugViewModel.debugEnabled) {
-              return const SizedBox.shrink();
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.lg),
-                AppSectionHeader(title: l10n.settingsDeveloper),
-                const SizedBox(height: AppSpacing.sm),
-                AppCard(
-                  child: Column(
-                    children: [
-                      SwitchListTile(
-                        value: debugViewModel.debugEnabled,
-                        onChanged: debugViewModel.setDebugEnabled,
-                        secondary: Icon(
-                          Icons.bug_report_outlined,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        title: Text(
-                          l10n.settingsDebugMode,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        subtitle: Text(
-                          l10n.settingsDebugModeSubtitle,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.componentPadding,
-                          vertical: AppSpacing.xs,
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      _LogLevelTile(
-                        currentLevel: debugViewModel.logLevel,
-                        onChanged: debugViewModel.setLogLevel,
-                      ),
-                    ],
+          AppSectionHeader(title: l10n.settingsTitle),
+          const SizedBox(height: AppSpacing.lg),
+          AppSectionHeader(title: l10n.settingsTheme),
+          const SizedBox(height: AppSpacing.sm),
+          ListenableBuilder(
+            listenable: themeViewModel,
+            builder: (context, _) => AppCard(
+              child: Column(
+                children: [
+                  _ThemeOptionTile(
+                    label: l10n.settingsThemeLight,
+                    icon: Icons.light_mode_outlined,
+                    value: ThemeMode.light,
+                    groupValue: themeViewModel.themeMode,
+                    onChanged: themeViewModel.setThemeMode,
                   ),
-                ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppListCard(
-          title: l10n.settingsAbout,
-          leading: const Icon(Icons.info_outline),
-          onTap: () => Navigator.of(context).pushNamed('/about'),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        AppListCard(
-          title: l10n.settingsLicenses,
-          leading: const Icon(Icons.description_outlined),
-          onTap: () => openAppLicensePage(context),
-        ),
-        ListenableBuilder(
-          listenable: debugViewModel,
-          builder: (context, _) => debugViewModel.debugEnabled
-              ? Column(
-                  children: [
-                    const SizedBox(height: AppSpacing.sm),
-                    AppListCard(
-                      title: l10n.settingsLogs,
-                      leading: const Icon(Icons.list_alt_outlined),
-                      onTap: () => Navigator.of(context).pushNamed('/logs'),
+                  const Divider(height: 1),
+                  _ThemeOptionTile(
+                    label: l10n.settingsThemeDark,
+                    icon: Icons.dark_mode_outlined,
+                    value: ThemeMode.dark,
+                    groupValue: themeViewModel.themeMode,
+                    onChanged: themeViewModel.setThemeMode,
+                  ),
+                  const Divider(height: 1),
+                  _ThemeOptionTile(
+                    label: l10n.settingsThemeSystem,
+                    icon: Icons.brightness_auto_outlined,
+                    value: ThemeMode.system,
+                    groupValue: themeViewModel.themeMode,
+                    onChanged: themeViewModel.setThemeMode,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppSectionHeader(title: l10n.settingsLanguage),
+          const SizedBox(height: AppSpacing.sm),
+          ListenableBuilder(
+            listenable: languageViewModel,
+            builder: (context, _) => AppCard(
+              child: Column(
+                children: [
+                  _LanguageOptionTile(
+                    label: l10n.settingsLanguageSystem,
+                    icon: Icons.language_outlined,
+                    value: AppLanguage.system,
+                    groupValue: languageViewModel.language,
+                    onChanged: languageViewModel.setLanguage,
+                  ),
+                  const Divider(height: 1),
+                  _LanguageOptionTile(
+                    label: l10n.settingsLanguageEnglish,
+                    icon: Icons.translate_outlined,
+                    value: AppLanguage.english,
+                    groupValue: languageViewModel.language,
+                    onChanged: languageViewModel.setLanguage,
+                  ),
+                  const Divider(height: 1),
+                  _LanguageOptionTile(
+                    label: l10n.settingsLanguageJapanese,
+                    icon: Icons.translate_outlined,
+                    value: AppLanguage.japanese,
+                    groupValue: languageViewModel.language,
+                    onChanged: languageViewModel.setLanguage,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ListenableBuilder(
+            listenable: debugViewModel,
+            builder: (context, _) {
+              if (!debugViewModel.debugEnabled) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: AppSpacing.lg),
+                  AppSectionHeader(title: l10n.settingsDeveloper),
+                  const SizedBox(height: AppSpacing.sm),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          value: debugViewModel.debugEnabled,
+                          onChanged: debugViewModel.setDebugEnabled,
+                          secondary: Icon(
+                            Icons.bug_report_outlined,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                          title: Text(
+                            l10n.settingsDebugMode,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          subtitle: Text(
+                            l10n.settingsDebugModeSubtitle,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.componentPadding,
+                            vertical: AppSpacing.xs,
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        _LogLevelTile(
+                          currentLevel: debugViewModel.logLevel,
+                          onChanged: debugViewModel.setLogLevel,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    AppListCard(
-                      title: l10n.settingsDebug,
-                      leading: const Icon(Icons.bug_report_outlined),
-                      onTap: () => Navigator.of(context).pushNamed('/debug'),
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppListCard(
+            title: l10n.settingsAbout,
+            leading: const Icon(Icons.info_outline),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed('/about');
+            },
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppListCard(
+            title: l10n.settingsLicenses,
+            leading: const Icon(Icons.description_outlined),
+            onTap: () {
+              Navigator.of(context).pop();
+              openAppLicensePage(context);
+            },
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ─── Shared option tiles ──────────────────────────────────────────────────────
 
 class _ThemeOptionTile extends StatelessWidget {
   const _ThemeOptionTile({
@@ -467,10 +368,8 @@ class _ThemeOptionTile extends StatelessWidget {
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color:
-                  selected ? colorScheme.primary : colorScheme.onSurface,
-              fontWeight:
-                  selected ? FontWeight.w700 : FontWeight.w400,
+              color: selected ? colorScheme.primary : colorScheme.onSurface,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
             ),
       ),
       trailing: selected
@@ -551,10 +450,7 @@ class _LogLevelTile extends StatelessWidget {
       (LogLevel.error, l10n.logLevelError),
     ];
     return ListTile(
-      leading: Icon(
-        Icons.tune_outlined,
-        color: colorScheme.onSurfaceVariant,
-      ),
+      leading: Icon(Icons.tune_outlined, color: colorScheme.onSurfaceVariant),
       title: Text(
         l10n.settingsLogLevel,
         style: Theme.of(context).textTheme.bodyLarge,

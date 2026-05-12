@@ -43,6 +43,9 @@ dependencies:
   # Equatable (value objects)
   equatable: ^2.0.5
 
+  # Internationalisation / number formatting
+  intl: ^0.19.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

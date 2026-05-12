@@ -172,6 +172,69 @@ abstract class AppLocalizations {
   String get commonLoading;
   String get commonError;
   String get commonEmpty;
+  String get commonCancel;
+  String get commonDelete;
+  String get commonSave;
+  String get commonConfirm;
+
+  // ─── Bottom navigation ────────────────────────────────────────────────
+  String get navCompare;
+  String get navProducts;
+
+  // ─── Compare screen ───────────────────────────────────────────────────
+  String get compareTitle;
+  String get compareProductName;
+  String get compareBasePrice;
+  String get compareSaleDiscount;
+  String get comparePoints;
+  String get compareQuantity;
+  String get compareEffectivePrice;
+  String get compareUnitPrice;
+  String get compareAddRow;
+  String get compareDeleteRow;
+  String get compareAddToHistory;
+  String get compareViewHistory;
+  String get compareSaveSuccess;
+  String get compareSaveErrorNameRequired;
+  String get compareHistorySummaryCount;
+  String get compareHistorySummaryMinUnitPrice;
+  String get compareHistorySummaryLatest;
+  String get compareBasePriceRequired;
+  String get compareQuantityRequired;
+
+  // ─── Product list screen ──────────────────────────────────────────────
+  String get productsTitle;
+  String get productsSearchHint;
+  String get productsEmpty;
+  String get productsHistoryCount;
+  String get productsMinUnitPrice;
+  String get productsLatestDate;
+  String get productsDeleteConfirmTitle;
+  String get productsDeleteConfirmBody;
+
+  // ─── Product detail screen ────────────────────────────────────────────
+  String get productDetailHistoryCountLabel;
+  String get productDetailHistoryCount;
+  String get productDetailMinUnitPrice;
+  String get productDetailLatestUnitPrice;
+  String get productDetailHistoryEmpty;
+  String get productDetailDeleteHistoryConfirmTitle;
+  String get productDetailDeleteHistoryConfirmBody;
+
+  // ─── History detail screen ────────────────────────────────────────────
+  String get historyDetailTitle;
+  String get historyDetailStoreName;
+  String get historyDetailBasePrice;
+  String get historyDetailSaleDiscount;
+  String get historyDetailPoints;
+  String get historyDetailQuantity;
+  String get historyDetailEffectivePrice;
+  String get historyDetailUnitPrice;
+  String get historyDetailRecordedAt;
+  String get historyDetailMemo;
+  String get historyDetailDeleteConfirmTitle;
+  String get historyDetailDeleteConfirmBody;
+  String get historyDetailDeleteSuccess;
 }
 
 class _AppLocalizationsDelegate

@@ -260,4 +260,120 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonError => 'エラーが発生しました';
   @override
   String get commonEmpty => 'データがありません';
+  @override
+  String get commonCancel => 'キャンセル';
+  @override
+  String get commonDelete => '削除';
+  @override
+  String get commonSave => '保存';
+  @override
+  String get commonConfirm => '確認';
+
+  // ─── Bottom navigation ────────────────────────────────────────────────
+  @override
+  String get navCompare => '比較';
+  @override
+  String get navProducts => '商品';
+
+  // ─── Compare screen ───────────────────────────────────────────────────
+  @override
+  String get compareTitle => '比較';
+  @override
+  String get compareProductName => '商品名';
+  @override
+  String get compareBasePrice => '販売価格';
+  @override
+  String get compareSaleDiscount => 'セール値引き';
+  @override
+  String get comparePoints => 'ポイント';
+  @override
+  String get compareQuantity => '数量';
+  @override
+  String get compareEffectivePrice => '実質価格';
+  @override
+  String get compareUnitPrice => '単価';
+  @override
+  String get compareAddRow => '追加';
+  @override
+  String get compareDeleteRow => '削除';
+  @override
+  String get compareAddToHistory => '履歴に追加';
+  @override
+  String get compareViewHistory => '履歴を見る';
+  @override
+  String get compareSaveSuccess => '履歴に保存しました';
+  @override
+  String get compareSaveErrorNameRequired => '保存するには商品名が必要です';
+  @override
+  String get compareHistorySummaryCount => '件';
+  @override
+  String get compareHistorySummaryMinUnitPrice => '最安単価';
+  @override
+  String get compareHistorySummaryLatest => '最新記録';
+  @override
+  String get compareBasePriceRequired => '販売価格を入力してください';
+  @override
+  String get compareQuantityRequired => '数量を入力してください';
+
+  // ─── Product list screen ──────────────────────────────────────────────
+  @override
+  String get productsTitle => '商品';
+  @override
+  String get productsSearchHint => '商品名で検索';
+  @override
+  String get productsEmpty => '保存済み商品はありません。\n価格比較して履歴に追加してください。';
+  @override
+  String get productsHistoryCount => '件';
+  @override
+  String get productsMinUnitPrice => '最安単価';
+  @override
+  String get productsLatestDate => '最新記録';
+  @override
+  String get productsDeleteConfirmTitle => '商品を削除しますか？';
+  @override
+  String get productsDeleteConfirmBody => '商品と履歴がすべて削除されます。この操作は元に戻せません。';
+
+  // ─── Product detail screen ────────────────────────────────────────────
+  @override
+  String get productDetailHistoryCountLabel => '履歴';
+  @override
+  String get productDetailHistoryCount => '件';
+  @override
+  String get productDetailMinUnitPrice => '最安単価';
+  @override
+  String get productDetailLatestUnitPrice => '最新単価';
+  @override
+  String get productDetailHistoryEmpty => '履歴がありません。';
+  @override
+  String get productDetailDeleteHistoryConfirmTitle => '履歴を削除しますか？';
+  @override
+  String get productDetailDeleteHistoryConfirmBody => 'この履歴は完全に削除されます。';
+
+  // ─── History detail screen ────────────────────────────────────────────
+  @override
+  String get historyDetailTitle => '履歴詳細';
+  @override
+  String get historyDetailStoreName => '店舗名';
+  @override
+  String get historyDetailBasePrice => '販売価格';
+  @override
+  String get historyDetailSaleDiscount => 'セール値引き';
+  @override
+  String get historyDetailPoints => 'ポイント';
+  @override
+  String get historyDetailQuantity => '数量';
+  @override
+  String get historyDetailEffectivePrice => '実質価格';
+  @override
+  String get historyDetailUnitPrice => '単価';
+  @override
+  String get historyDetailRecordedAt => '記録日時';
+  @override
+  String get historyDetailMemo => 'メモ';
+  @override
+  String get historyDetailDeleteConfirmTitle => '履歴を削除しますか？';
+  @override
+  String get historyDetailDeleteConfirmBody => 'この履歴は完全に削除されます。';
+  @override
+  String get historyDetailDeleteSuccess => '削除しました';
 }
