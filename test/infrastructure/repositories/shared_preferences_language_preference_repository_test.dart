@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutterbase/infrastructure/repositories/shared_preferences_language_preference_repository.dart';
-import 'package:flutterbase/shared/value_objects/app_language.dart';
+import 'package:pricecompare/infrastructure/repositories/shared_preferences_language_preference_repository.dart';
+import 'package:pricecompare/shared/value_objects/app_language.dart';
 
 void main() {
   late SharedPreferences prefs;

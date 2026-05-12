@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 void main() {
   final now = DateTime(2026, 5, 12);

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 void main() {
   final id = ProductId('test-id');
