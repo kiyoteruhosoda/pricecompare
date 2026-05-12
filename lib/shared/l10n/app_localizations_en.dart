@@ -8,6 +8,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appName => 'PriceCompare';
   @override
+  String get appDescription => 'Compare unit prices across multiple products instantly';
+  @override
+  String get appTagline => 'Price comparison & history';
+  @override
   String get navHome => 'Home';
   @override
   String get navSearch => 'Search';

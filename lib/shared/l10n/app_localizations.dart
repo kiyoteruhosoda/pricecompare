@@ -36,6 +36,8 @@ abstract class AppLocalizations {
 
   // ─── Navigation ───────────────────────────────────────────────────────
   String get appName;
+  String get appDescription;
+  String get appTagline;
   String get navHome;
   String get navSearch;
   String get navSettings;

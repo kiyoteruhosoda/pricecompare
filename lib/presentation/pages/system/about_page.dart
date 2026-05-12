@@ -3,7 +3,6 @@ import 'package:flutterbase/app/di/service_locator.dart';
 import 'package:flutterbase/presentation/viewmodels/about_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/debug_settings_viewmodel.dart';
 import 'package:flutterbase/presentation/widgets/ui/widgets.dart';
-import 'package:flutterbase/shared/config/app_config.dart';
 import 'package:flutterbase/shared/l10n/app_localizations.dart';
 import 'package:flutterbase/shared/theme/theme.dart';
 
@@ -94,14 +93,14 @@ class _AboutPageState extends State<AboutPage> {
         const SizedBox(height: AppSpacing.xl),
         Center(
           child: Text(
-            AppConfig.appName,
+            l10n.appName,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Center(
           child: Text(
-            AppConfig.appDescription,
+            l10n.appDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

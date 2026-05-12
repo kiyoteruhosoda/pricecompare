@@ -6,7 +6,6 @@ import 'package:flutterbase/presentation/viewmodels/debug_settings_viewmodel.dar
 import 'package:flutterbase/presentation/viewmodels/language_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/theme_viewmodel.dart';
 import 'package:flutterbase/presentation/widgets/ui/widgets.dart';
-import 'package:flutterbase/shared/config/app_config.dart';
 import 'package:flutterbase/shared/l10n/app_localizations.dart';
 import 'package:flutterbase/shared/logging/log_level.dart';
 import 'package:flutterbase/shared/theme/theme.dart';
@@ -61,7 +60,7 @@ class _MainPageState extends State<MainPage> {
             final debugEnabled = sl<DebugSettingsViewModel>().debugEnabled;
             return AppDrawer(
               appName: l10n.appName,
-              headerSubtitle: AppConfig.appTagline,
+              headerSubtitle: l10n.appTagline,
               items: [
                 AppDrawerItem(
                   label: l10n.navCompare,

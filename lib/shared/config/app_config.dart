@@ -15,14 +15,7 @@ class AppConfig {
   /// and About page.
   static const String appName = 'PriceCompare';
 
-  /// One-line description shown on the About page.
-  static const String appDescription = '複数商品の単価を即時計算・比較するアプリ';
-
-  /// Short tagline rendered under the app name in the drawer.
-  static const String appTagline = '価格比較 & 履歴管理';
-
   // ─── Home page copy ───────────────────────────────────────────────
-  static const String homeSubtitle = '価格比較 & 履歴管理';
   static const String homeCardTitle = 'PriceCompare';
 
   // ─── Typography ───────────────────────────────────────────────────

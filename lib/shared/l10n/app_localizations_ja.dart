@@ -8,6 +8,10 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get appName => 'PriceCompare';
   @override
+  String get appDescription => '複数商品の単価を即時計算・比較するアプリ';
+  @override
+  String get appTagline => '価格比較 & 履歴管理';
+  @override
   String get navHome => 'ホーム';
   @override
   String get navSearch => '検索';
