@@ -1,6 +1,6 @@
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
-import 'package:flutterbase/infrastructure/db/sqlite/rows/product_row.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/rows/product_row.dart';
 
 class ProductMapper {
   const ProductMapper._();

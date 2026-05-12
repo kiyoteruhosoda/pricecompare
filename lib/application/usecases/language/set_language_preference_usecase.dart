@@ -1,5 +1,5 @@
-import 'package:flutterbase/domain/repositories/language_preference_repository.dart';
-import 'package:flutterbase/shared/value_objects/app_language.dart';
+import 'package:pricecompare/domain/repositories/language_preference_repository.dart';
+import 'package:pricecompare/shared/value_objects/app_language.dart';
 
 /// Persists the user's language preference.
 final class SetLanguagePreferenceUseCase {

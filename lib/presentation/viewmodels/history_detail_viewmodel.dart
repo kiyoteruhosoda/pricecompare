@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/application/usecases/product/delete_product_history_usecase.dart';
-import 'package:flutterbase/application/usecases/product/get_product_history_usecase.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/application/usecases/product/delete_product_history_usecase.dart';
+import 'package:pricecompare/application/usecases/product/get_product_history_usecase.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
 
 enum HistoryDetailState { loading, loaded, deleted, error }
 

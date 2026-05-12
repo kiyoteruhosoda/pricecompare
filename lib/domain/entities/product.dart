@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 class Product extends Equatable {
   const Product({

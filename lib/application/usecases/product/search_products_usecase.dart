@@ -1,5 +1,5 @@
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
 
 class SearchProductsUseCase {
   const SearchProductsUseCase(this._repository);

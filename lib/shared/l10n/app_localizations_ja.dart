@@ -1,4 +1,4 @@
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
 
 /// Japanese localisations.
 class AppLocalizationsJa extends AppLocalizations {

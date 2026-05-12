@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/presentation/viewmodels/compare_viewmodel.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/theme/theme.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/presentation/viewmodels/compare_viewmodel.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/theme/theme.dart';
 import 'package:intl/intl.dart';
 
 class ComparePage extends StatefulWidget {
@@ -15,33 +15,27 @@ class ComparePage extends StatefulWidget {
 
 class _ComparePageState extends State<ComparePage> {
   late final CompareViewModel _vm;
-  final Map<String, _RowControllers> _controllers = {};
+  final List<_SlotControllers> _slotControllers = [];
 
   @override
   void initState() {
     super.initState();
     _vm = sl<CompareViewModel>();
-    // On re-mount the singleton VM may already hold rows with values;
-    // rehydrate controllers so the displayed text matches the stored state.
-    for (final row in _vm.rows) {
-      _controllers[row.id] = _RowControllers.fromRow(row);
+    // Ensure exactly 2 rows exist.
+    while (_vm.rows.length < 2) {
+      _vm.addRow();
+    }
+    for (final row in _vm.rows.take(2)) {
+      _slotControllers.add(_SlotControllers.fromRow(row));
     }
   }
 
   @override
   void dispose() {
-    for (final c in _controllers.values) {
+    for (final c in _slotControllers) {
       c.dispose();
     }
     super.dispose();
-  }
-
-  _RowControllers _controllersFor(String id) {
-    return _controllers.putIfAbsent(id, () => _RowControllers());
-  }
-
-  void _removeControllers(String id) {
-    _controllers.remove(id)?.dispose();
   }
 
   @override
@@ -50,61 +44,89 @@ class _ComparePageState extends State<ComparePage> {
     return ListenableBuilder(
       listenable: _vm,
       builder: (context, _) {
-        _syncControllers();
         _handleStateChange(context, l10n);
-        return Stack(
-          children: [
-            ListView.separated(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.pageMargin,
-                AppSpacing.pageMargin,
-                AppSpacing.pageMargin,
-                AppSpacing.pageMargin + 64,
-              ),
-              itemCount: _vm.rows.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.lg),
-              itemBuilder: (context, index) {
-                final row = _vm.rows[index];
-                final ctrl = _controllersFor(row.id);
-                return _CompareRowCard(
-                  row: row,
-                  controllers: ctrl,
-                  canDelete: _vm.rows.length > 1,
-                  onDelete: () {
-                    _removeControllers(row.id);
-                    _vm.removeRow(row.id);
-                  },
-                  onNameChanged: (v) => _vm.updateProductName(row.id, v),
-                  onBasePriceChanged: (v) => _vm.updateBasePrice(row.id, v),
+        final rows = _vm.rows.take(2).toList();
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.pageMargin),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Slot A ──────────────────────────────────────────────
+              if (rows.isNotEmpty)
+                _SlotCard(
+                  label: 'A',
+                  row: rows[0],
+                  controllers: _slotControllers[0],
+                  onBasePriceChanged: (v) =>
+                      _vm.updateBasePrice(rows[0].id, v),
                   onDiscountChanged: (v) =>
-                      _vm.updateSaleDiscount(row.id, v ?? 0),
-                  onPointsChanged: (v) => _vm.updatePoints(row.id, v ?? 0),
-                  onQuantityChanged: (v) => _vm.updateQuantity(row.id, v),
-                  onSave: () => _vm.saveRow(row.id),
-                  onViewHistory: () => _navigateToProduct(context, row),
-                );
-              },
-            ),
-            Positioned(
-              right: AppSpacing.pageMargin,
-              bottom: AppSpacing.pageMargin,
-              child: FloatingActionButton.extended(
-                onPressed: _vm.addRow,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.compareAddRow),
-              ),
-            ),
-          ],
+                      _vm.updateSaleDiscount(rows[0].id, v ?? 0),
+                  onPointsChanged: (v) =>
+                      _vm.updatePoints(rows[0].id, v ?? 0),
+                  onQuantityChanged: (v) =>
+                      _vm.updateQuantity(rows[0].id, v),
+                  onNameChanged: (v) =>
+                      _vm.updateProductName(rows[0].id, v),
+                  onSave: () => _vm.saveRow(rows[0].id),
+                ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // ── vs divider ──────────────────────────────────────────
+              if (rows.length >= 2)
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm),
+                      child: Text(
+                        'vs',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // ── Slot B ──────────────────────────────────────────────
+              if (rows.length >= 2)
+                _SlotCard(
+                  label: 'B',
+                  row: rows[1],
+                  controllers: _slotControllers[1],
+                  onBasePriceChanged: (v) =>
+                      _vm.updateBasePrice(rows[1].id, v),
+                  onDiscountChanged: (v) =>
+                      _vm.updateSaleDiscount(rows[1].id, v ?? 0),
+                  onPointsChanged: (v) =>
+                      _vm.updatePoints(rows[1].id, v ?? 0),
+                  onQuantityChanged: (v) =>
+                      _vm.updateQuantity(rows[1].id, v),
+                  onNameChanged: (v) =>
+                      _vm.updateProductName(rows[1].id, v),
+                  onSave: () => _vm.saveRow(rows[1].id),
+                ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // ── Result banner ────────────────────────────────────────
+              if (rows.length >= 2)
+                _ResultBanner(rowA: rows[0], rowB: rows[1], l10n: l10n),
+            ],
+          ),
         );
       },
     );
-  }
-
-  void _syncControllers() {
-    for (final row in _vm.rows) {
-      _controllersFor(row.id);
-    }
   }
 
   void _handleStateChange(BuildContext context, AppLocalizations l10n) {
@@ -138,59 +160,48 @@ class _ComparePageState extends State<ComparePage> {
       });
     }
   }
-
-  void _navigateToProduct(BuildContext context, CompareRow row) {
-    if (row.productName.trim().isEmpty) return;
-    Navigator.of(context)
-        .pushNamed('/product-by-name', arguments: row.productName.trim());
-  }
 }
 
-// ─── Row card ────────────────────────────────────────────────────────────────
+// ─── Slot card ────────────────────────────────────────────────────────────────
 
-class _CompareRowCard extends StatelessWidget {
-  const _CompareRowCard({
+class _SlotCard extends StatelessWidget {
+  const _SlotCard({
+    required this.label,
     required this.row,
     required this.controllers,
-    required this.canDelete,
-    required this.onDelete,
-    required this.onNameChanged,
     required this.onBasePriceChanged,
     required this.onDiscountChanged,
     required this.onPointsChanged,
     required this.onQuantityChanged,
+    required this.onNameChanged,
     required this.onSave,
-    required this.onViewHistory,
   });
 
+  final String label;
   final CompareRow row;
-  final _RowControllers controllers;
-  final bool canDelete;
-  final VoidCallback onDelete;
-  final ValueChanged<String> onNameChanged;
+  final _SlotControllers controllers;
   final ValueChanged<double?> onBasePriceChanged;
   final ValueChanged<double?> onDiscountChanged;
   final ValueChanged<double?> onPointsChanged;
   final ValueChanged<double?> onQuantityChanged;
+  final ValueChanged<String> onNameChanged;
   final VoidCallback onSave;
-  final VoidCallback onViewHistory;
+
+  bool get _hasResult =>
+      row.basePrice != null && row.quantity != null && row.quantity! > 0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isBest = row.isBest &&
-        row.unitPrice != null &&
-        _hasValidInputs();
+    final colorScheme = Theme.of(context).colorScheme;
+    final isBest = row.isBest && _hasResult;
 
     return Card(
       color: isBest ? AppColors.statusSuccessBg : null,
       shape: isBest
           ? RoundedRectangleBorder(
               borderRadius: AppRadius.lgBorder,
-              side: BorderSide(
-                color: AppColors.statusSuccess,
-                width: 2,
-              ),
+              side: BorderSide(color: AppColors.statusSuccess, width: 2),
             )
           : null,
       child: Padding(
@@ -198,51 +209,48 @@ class _CompareRowCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ─── Header row ───────────────────────────────────────────
+            // ── Card header ──────────────────────────────────────────
             Row(
               children: [
-                if (isBest) ...[
-                  Icon(
-                    Icons.star,
-                    color: AppColors.statusSuccess,
-                    size: AppSpacing.iconLg,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                ],
-                Expanded(
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor:
+                      isBest ? AppColors.statusSuccess : colorScheme.primary,
                   child: Text(
-                    isBest ? _formatUnitPrice(row.unitPrice) : '',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    label,
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                if (isBest) ...[
+                  Icon(Icons.star, color: AppColors.statusSuccess, size: 18),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    _formatUnitPrice(row.unitPrice),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: AppColors.statusSuccess,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                ),
-                if (canDelete)
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: l10n.compareDeleteRow,
-                    onPressed: onDelete,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: AppSpacing.minTapTarget,
-                      minHeight: AppSpacing.minTapTarget,
-                    ),
+                ] else if (_hasResult) ...[
+                  Text(
+                    _formatUnitPrice(row.unitPrice),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                   ),
+                ],
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-
-            // ─── Product name ─────────────────────────────────────────
-            _buildNameField(context, l10n),
-
-            // ─── Summary hint ─────────────────────────────────────────
-            if (row.summary != null) _buildSummaryHint(context, l10n),
 
             const SizedBox(height: AppSpacing.sm),
 
-            // ─── Price inputs ─────────────────────────────────────────
-            _buildPriceInput(
+            // ── Inputs ───────────────────────────────────────────────
+            _numField(
               context,
               label: l10n.compareBasePrice,
               controller: controllers.basePrice,
@@ -252,7 +260,7 @@ class _CompareRowCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _buildPriceInput(
+                  child: _numField(
                     context,
                     label: l10n.compareSaleDiscount,
                     controller: controllers.saleDiscount,
@@ -261,7 +269,7 @@ class _CompareRowCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: _buildPriceInput(
+                  child: _numField(
                     context,
                     label: l10n.comparePoints,
                     controller: controllers.points,
@@ -271,58 +279,74 @@ class _CompareRowCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildPriceInput(
+            _numField(
               context,
               label: l10n.compareQuantity,
               controller: controllers.quantity,
               onChanged: (v) => onQuantityChanged(_parseDouble(v)),
             ),
 
-            // ─── Computed results ─────────────────────────────────────
-            if (row.effectivePrice != null || row.unitPrice != null) ...[
-              const SizedBox(height: AppSpacing.md),
+            // ── Computed result ──────────────────────────────────────
+            if (_hasResult) ...[
+              const SizedBox(height: AppSpacing.sm),
               const Divider(height: 1),
               const SizedBox(height: AppSpacing.sm),
-              _buildResultRow(
-                context,
-                label: l10n.compareEffectivePrice,
-                value: row.effectivePrice != null
-                    ? _formatPrice(row.effectivePrice!)
-                    : '—',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(l10n.compareEffectivePrice,
+                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    row.effectivePrice != null
+                        ? _formatPrice(row.effectivePrice!)
+                        : '—',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.xs),
-              _buildResultRow(
-                context,
-                label: l10n.compareUnitPrice,
-                value: row.unitPrice != null
-                    ? _formatUnitPrice(row.unitPrice)
-                    : '—',
-                highlight: isBest,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.compareUnitPrice,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  Text(
+                    _formatUnitPrice(row.unitPrice),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isBest ? AppColors.statusSuccess : null,
+                        ),
+                  ),
+                ],
               ),
             ],
 
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
 
-            // ─── Action buttons ───────────────────────────────────────
+            // ── Name + save ──────────────────────────────────────────
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.history, size: AppSpacing.iconMd),
-                    label: Text(l10n.compareViewHistory),
-                    onPressed: row.productName.trim().isNotEmpty
-                        ? onViewHistory
-                        : null,
+                  child: TextField(
+                    controller: controllers.name,
+                    decoration: InputDecoration(
+                      labelText: l10n.compareProductName,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    onChanged: onNameChanged,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.save_outlined,
-                        size: AppSpacing.iconMd),
-                    label: Text(l10n.compareAddToHistory),
-                    onPressed: onSave,
-                  ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.save_outlined, size: 18),
+                  label: Text(l10n.compareAddToHistory),
+                  onPressed: _hasResult ? onSave : null,
                 ),
               ],
             ),
@@ -332,58 +356,7 @@ class _CompareRowCard extends StatelessWidget {
     );
   }
 
-  bool _hasValidInputs() =>
-      row.basePrice != null && row.quantity != null && row.quantity! > 0;
-
-  Widget _buildNameField(BuildContext context, AppLocalizations l10n) {
-    return TextField(
-      controller: controllers.name,
-      decoration: InputDecoration(
-        labelText: l10n.compareProductName,
-        border: const OutlineInputBorder(),
-        isDense: true,
-      ),
-      textInputAction: TextInputAction.next,
-      onChanged: onNameChanged,
-    );
-  }
-
-  Widget _buildSummaryHint(BuildContext context, AppLocalizations l10n) {
-    final summary = row.summary!;
-    final dateFmt = DateFormat('yyyy/MM/dd');
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(top: AppSpacing.xs),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: AppRadius.smBorder,
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline,
-              size: AppSpacing.iconSm,
-              color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Text(
-              '${l10n.compareHistorySummaryCount}: ${summary.historyCount}  '
-              '${l10n.compareHistorySummaryMinUnitPrice}: ${_formatUnitPrice(summary.minUnitPrice)}  '
-              '${l10n.compareHistorySummaryLatest}: ${dateFmt.format(summary.latestRecordedAt)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceInput(
+  Widget _numField(
     BuildContext context, {
     required String label,
     required TextEditingController controller,
@@ -405,56 +378,93 @@ class _CompareRowCard extends StatelessWidget {
     );
   }
 
-  Widget _buildResultRow(
-    BuildContext context, {
-    required String label,
-    required String value,
-    bool highlight = false,
-  }) {
-    final style = Theme.of(context).textTheme.bodyMedium;
-    final valueStyle = highlight
-        ? style?.copyWith(
-            color: AppColors.statusSuccess,
-            fontWeight: FontWeight.bold,
-          )
-        : style;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: style),
-        Text(value, style: valueStyle),
-      ],
-    );
-  }
-
   static double? _parseDouble(String v) {
-    final trimmed = v.trim();
-    if (trimmed.isEmpty) return null;
-    return double.tryParse(trimmed);
+    final t = v.trim();
+    if (t.isEmpty) return null;
+    return double.tryParse(t);
   }
 
-  static String _formatPrice(double price) {
-    return '¥${NumberFormat('#,##0').format(price)}';
-  }
+  static String _formatPrice(double price) =>
+      '¥${NumberFormat('#,##0').format(price)}';
 
   static String _formatUnitPrice(double? price) {
     if (price == null) return '—';
-    return '¥${NumberFormat('#,##0.##').format(price)}';
+    return '¥${NumberFormat('#,##0.##').format(price)}/個';
   }
 }
 
-// ─── Controllers holder ───────────────────────────────────────────────────────
+// ─── Result banner ─────────────────────────────────────────────────────────────
 
-class _RowControllers {
-  _RowControllers()
+class _ResultBanner extends StatelessWidget {
+  const _ResultBanner({
+    required this.rowA,
+    required this.rowB,
+    required this.l10n,
+  });
+
+  final CompareRow rowA;
+  final CompareRow rowB;
+  final AppLocalizations l10n;
+
+  bool get _bothReady =>
+      rowA.unitPrice != null && rowB.unitPrice != null;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_bothReady) return const SizedBox.shrink();
+
+    final winner = rowA.isBest ? 'A' : 'B';
+    final diff = (rowA.unitPrice! - rowB.unitPrice!).abs();
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.statusSuccessBg,
+        borderRadius: AppRadius.lgBorder,
+        border: Border.all(color: AppColors.statusSuccess),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.emoji_events, color: AppColors.statusSuccess, size: 28),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$winner が安い',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.statusSuccess,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                Text(
+                  '差額 ¥${NumberFormat('#,##0.##').format(diff)}/個',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.statusSuccess,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Controllers holder ────────────────────────────────────────────────────────
+
+class _SlotControllers {
+  _SlotControllers()
       : name = TextEditingController(),
         basePrice = TextEditingController(),
         saleDiscount = TextEditingController(),
         points = TextEditingController(),
         quantity = TextEditingController();
 
-  factory _RowControllers.fromRow(CompareRow row) {
-    return _RowControllers()
+  factory _SlotControllers.fromRow(CompareRow row) {
+    return _SlotControllers()
       ..name.text = row.productName
       ..basePrice.text = _fmt(row.basePrice)
       ..saleDiscount.text = row.saleDiscount == 0 ? '' : _fmt(row.saleDiscount)

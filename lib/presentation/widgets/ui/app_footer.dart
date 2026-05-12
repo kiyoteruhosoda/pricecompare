@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/presentation/widgets/ui/app_license_launcher.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/theme/theme.dart';
+import 'package:pricecompare/presentation/widgets/ui/app_license_launcher.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/theme/theme.dart';
 
 /// Footer bar shown at the bottom of the main screen.
 /// Contains navigation links only — version info is on the About page.

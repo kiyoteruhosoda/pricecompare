@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutterbase/application/dto/product_summary_dto.dart';
-import 'package:flutterbase/application/dto/save_product_history_input.dart';
-import 'package:flutterbase/application/usecases/product/get_product_summary_usecase.dart';
-import 'package:flutterbase/application/usecases/product/save_product_history_usecase.dart';
+import 'package:pricecompare/application/dto/product_summary_dto.dart';
+import 'package:pricecompare/application/dto/save_product_history_input.dart';
+import 'package:pricecompare/application/usecases/product/get_product_summary_usecase.dart';
+import 'package:pricecompare/application/usecases/product/save_product_history_usecase.dart';
 
 class CompareRow {
   CompareRow({

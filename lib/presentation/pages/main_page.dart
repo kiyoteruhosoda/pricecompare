@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/presentation/pages/compare_page.dart';
-import 'package:flutterbase/presentation/pages/product_list_page.dart';
-import 'package:flutterbase/presentation/viewmodels/debug_settings_viewmodel.dart';
-import 'package:flutterbase/presentation/viewmodels/language_viewmodel.dart';
-import 'package:flutterbase/presentation/viewmodels/theme_viewmodel.dart';
-import 'package:flutterbase/presentation/widgets/ui/widgets.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/logging/log_level.dart';
-import 'package:flutterbase/shared/theme/theme.dart';
-import 'package:flutterbase/shared/value_objects/app_language.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/presentation/pages/compare_page.dart';
+import 'package:pricecompare/presentation/pages/product_list_page.dart';
+import 'package:pricecompare/presentation/viewmodels/debug_settings_viewmodel.dart';
+import 'package:pricecompare/presentation/viewmodels/language_viewmodel.dart';
+import 'package:pricecompare/presentation/viewmodels/theme_viewmodel.dart';
+import 'package:pricecompare/presentation/widgets/ui/widgets.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/logging/log_level.dart';
+import 'package:pricecompare/shared/theme/theme.dart';
+import 'package:pricecompare/shared/value_objects/app_language.dart';
 
 /// Main screen with bottom navigation (Compare / Products).
 class MainPage extends StatefulWidget {

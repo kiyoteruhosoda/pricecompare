@@ -1,7 +1,7 @@
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 abstract interface class ProductRepository {
   Future<List<Product>> getAll();

@@ -1,5 +1,5 @@
-import 'package:flutterbase/application/dto/product_summary_dto.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
+import 'package:pricecompare/application/dto/product_summary_dto.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
 
 class GetProductSummaryUseCase {
   const GetProductSummaryUseCase(this._repository);

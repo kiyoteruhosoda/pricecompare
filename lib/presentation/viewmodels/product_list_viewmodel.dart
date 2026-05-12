@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/application/usecases/product/delete_product_usecase.dart';
-import 'package:flutterbase/application/usecases/product/search_products_usecase.dart';
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/application/usecases/product/delete_product_usecase.dart';
+import 'package:pricecompare/application/usecases/product/search_products_usecase.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 class ProductListItem {
   const ProductListItem({

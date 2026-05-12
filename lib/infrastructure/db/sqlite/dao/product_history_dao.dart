@@ -1,4 +1,4 @@
-import 'package:flutterbase/infrastructure/db/sqlite/rows/product_history_row.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/rows/product_history_row.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ProductHistoryDao {

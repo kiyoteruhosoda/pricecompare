@@ -1,12 +1,12 @@
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
-import 'package:flutterbase/infrastructure/db/sqlite/dao/product_dao.dart';
-import 'package:flutterbase/infrastructure/db/sqlite/dao/product_history_dao.dart';
-import 'package:flutterbase/infrastructure/mappers/product_history_mapper.dart';
-import 'package:flutterbase/infrastructure/mappers/product_mapper.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/dao/product_dao.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/dao/product_history_dao.dart';
+import 'package:pricecompare/infrastructure/mappers/product_history_mapper.dart';
+import 'package:pricecompare/infrastructure/mappers/product_mapper.dart';
 
 class SqliteProductRepository implements ProductRepository {
   const SqliteProductRepository({

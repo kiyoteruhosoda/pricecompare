@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutterbase/app/bootstrap/app_router.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/presentation/pages/main_page.dart';
-import 'package:flutterbase/presentation/viewmodels/language_viewmodel.dart';
-import 'package:flutterbase/presentation/viewmodels/theme_viewmodel.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/logging/app_logger.dart';
-import 'package:flutterbase/shared/theme/app_theme.dart';
+import 'package:pricecompare/app/bootstrap/app_router.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/presentation/pages/main_page.dart';
+import 'package:pricecompare/presentation/viewmodels/language_viewmodel.dart';
+import 'package:pricecompare/presentation/viewmodels/theme_viewmodel.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/logging/app_logger.dart';
+import 'package:pricecompare/shared/theme/app_theme.dart';
 
 /// Root widget. Listens to [ThemeViewModel] for live theme switching.
 class AppWidget extends StatefulWidget {
