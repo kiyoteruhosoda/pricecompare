@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:pricecompare/app/bootstrap/app_router.dart';
 import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/application/dto/product_summary_dto.dart';
 import 'package:pricecompare/presentation/viewmodels/compare_viewmodel.dart';
 import 'package:pricecompare/shared/l10n/app_localizations.dart';
 import 'package:pricecompare/shared/theme/theme.dart';
-import 'package:intl/intl.dart';
 
 class ComparePage extends StatefulWidget {
   const ComparePage({super.key});
@@ -16,7 +18,6 @@ class ComparePage extends StatefulWidget {
 class _ComparePageState extends State<ComparePage> {
   late final CompareViewModel _vm;
   final TextEditingController _productNameCtrl = TextEditingController();
-  // rowId → controllers
   final Map<String, _RowControllers> _rowCtrlMap = {};
 
   @override
@@ -57,16 +58,37 @@ class _ComparePageState extends State<ComparePage> {
                 AppSpacing.pageMargin,
                 AppSpacing.pageMargin,
                 AppSpacing.pageMargin,
-                // Extra bottom padding for the FABs
-                AppSpacing.pageMargin + 80,
+                AppSpacing.pageMargin + 88,
               ),
               children: [
                 // ── 商品名 ───────────────────────────────────────────
-                _ProductNameField(
+                TextField(
                   controller: _productNameCtrl,
-                  l10n: l10n,
+                  decoration: InputDecoration(
+                    labelText: l10n.compareProductName,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.shopping_basket_outlined),
+                  ),
+                  textInputAction: TextInputAction.next,
                   onChanged: _vm.updateProductName,
                 ),
+
+                // ── 履歴サマリ ────────────────────────────────────────
+                if (_vm.summary != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _HistorySummaryCard(
+                    summary: _vm.summary!,
+                    productName: _vm.productName,
+                    bestRows: _vm.rows
+                        .where((r) => r.isBest && r.unitPrice != null)
+                        .toList(),
+                    l10n: l10n,
+                    onViewHistory: () => Navigator.of(context).pushNamed(
+                      AppRouter.productByName,
+                      arguments: _vm.productName.trim(),
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: AppSpacing.md),
 
@@ -74,8 +96,7 @@ class _ComparePageState extends State<ComparePage> {
                 ..._vm.rows.map((row) {
                   final ctrl = _ctrlFor(row.id);
                   return Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppSpacing.md),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: _StoreRowCard(
                       row: row,
                       controllers: ctrl,
@@ -101,7 +122,7 @@ class _ComparePageState extends State<ComparePage> {
               ],
             ),
 
-            // ── FAB群 ────────────────────────────────────────────────
+            // ── FAB群 ─────────────────────────────────────────────────
             Positioned(
               right: AppSpacing.pageMargin,
               bottom: AppSpacing.pageMargin,
@@ -109,7 +130,6 @@ class _ComparePageState extends State<ComparePage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // 保存ボタン
                   FloatingActionButton.extended(
                     heroTag: 'save',
                     onPressed: _vm.state == CompareState.saving
@@ -125,7 +145,6 @@ class _ComparePageState extends State<ComparePage> {
                     label: Text(l10n.compareSave),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  // 追加ボタン
                   FloatingActionButton.extended(
                     heroTag: 'add',
                     onPressed: _vm.addRow,
@@ -178,30 +197,183 @@ class _ComparePageState extends State<ComparePage> {
   }
 }
 
-// ─── 商品名フィールド ──────────────────────────────────────────────────────────
+// ─── 履歴サマリカード ──────────────────────────────────────────────────────────
 
-class _ProductNameField extends StatelessWidget {
-  const _ProductNameField({
-    required this.controller,
+class _HistorySummaryCard extends StatelessWidget {
+  const _HistorySummaryCard({
+    required this.summary,
+    required this.productName,
+    required this.bestRows,
     required this.l10n,
-    required this.onChanged,
+    required this.onViewHistory,
   });
 
-  final TextEditingController controller;
+  final ProductSummaryDto summary;
+  final String productName;
+  final List<CompareRow> bestRows;
   final AppLocalizations l10n;
-  final ValueChanged<String> onChanged;
+  final VoidCallback onViewHistory;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: l10n.compareProductName,
-        border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.shopping_basket_outlined),
+    final colorScheme = Theme.of(context).colorScheme;
+    final dateFmt = DateFormat('yyyy/MM/dd');
+    final priceFmt = NumberFormat('#,##0.##');
+
+    // Best current row (lowest unit price in current input).
+    final currentBestUnitPrice =
+        bestRows.isNotEmpty ? bestRows.first.unitPrice : null;
+
+    // Is current best price lower than historical best?
+    final isCheaperThanHistory = currentBestUnitPrice != null &&
+        currentBestUnitPrice < summary.minUnitPrice;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: AppRadius.mdBorder,
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      textInputAction: TextInputAction.next,
-      onChanged: onChanged,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── サマリ情報 ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 件数 / 最新記録
+                Row(
+                  children: [
+                    Icon(Icons.history,
+                        size: 16, color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      '${l10n.compareHistorySummaryCount} ${summary.historyCount}件  '
+                      '${l10n.compareHistorySummaryLatest}: ${dateFmt.format(summary.latestRecordedAt)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+
+                // 最安単価
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '${l10n.compareHistorySummaryMinUnitPrice}: ',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    Text(
+                      '¥${priceFmt.format(summary.minUnitPrice)}/個',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                    ),
+                  ],
+                ),
+
+                // 現在の入力との比較
+                if (currentBestUnitPrice != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  _PriceComparisonChip(
+                    currentPrice: currentBestUnitPrice,
+                    historicalBest: summary.minUnitPrice,
+                    isCheaper: isCheaperThanHistory,
+                    priceFmt: priceFmt,
+                    context: context,
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // ── 履歴を見るボタン ───────────────────────────────────────
+          TextButton.icon(
+            onPressed: onViewHistory,
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: Text(l10n.compareViewHistory),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              alignment: Alignment.centerLeft,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 現在価格 vs 過去最安の比較チップ ─────────────────────────────────────────
+
+class _PriceComparisonChip extends StatelessWidget {
+  const _PriceComparisonChip({
+    required this.currentPrice,
+    required this.historicalBest,
+    required this.isCheaper,
+    required this.priceFmt,
+    required this.context,
+  });
+
+  final double currentPrice;
+  final double historicalBest;
+  final bool isCheaper;
+  final NumberFormat priceFmt;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext _) {
+    final diff = (currentPrice - historicalBest).abs();
+    final color =
+        isCheaper ? AppColors.statusSuccess : AppColors.statusWarning;
+    final bgColor =
+        isCheaper ? AppColors.statusSuccessBg : AppColors.statusWarningBg;
+    final icon = isCheaper ? Icons.arrow_downward : Icons.arrow_upward;
+    final label = isCheaper
+        ? '過去最安より ¥${priceFmt.format(diff)}/個 安い'
+        : '過去最安より ¥${priceFmt.format(diff)}/個 高い';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: AppRadius.smBorder,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -313,6 +313,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get compareBasePriceRequired => 'Price is required';
   @override
   String get compareQuantityRequired => 'Quantity is required';
+  @override
+  String get compareViewHistory => 'View history';
+  @override
+  String get compareHistorySummaryCount => 'records';
+  @override
+  String get compareHistorySummaryMinUnitPrice => 'Best unit price';
+  @override
+  String get compareHistorySummaryLatest => 'Latest';
+  @override
+  String get compareCurrentUnitPrice => 'Current unit price';
 
   // ─── Product list screen ──────────────────────────────────────────────
   @override

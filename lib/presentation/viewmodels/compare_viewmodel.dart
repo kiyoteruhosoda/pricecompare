@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:pricecompare/application/dto/product_summary_dto.dart';
 import 'package:pricecompare/application/dto/save_product_history_input.dart';
+import 'package:pricecompare/application/usecases/product/get_product_summary_usecase.dart';
 import 'package:pricecompare/application/usecases/product/save_product_history_usecase.dart';
 
 class CompareRow {
@@ -57,21 +61,25 @@ class CompareRow {
 enum CompareState { idle, saving, saved, error }
 
 class CompareViewModel extends ChangeNotifier {
-  CompareViewModel(this._saveHistory) {
+  CompareViewModel(this._saveHistory, this._getSummary) {
     _rows = [_newRow(), _newRow()];
   }
 
   final SaveProductHistoryUseCase _saveHistory;
+  final GetProductSummaryUseCase _getSummary;
 
   String _productName = '';
   late List<CompareRow> _rows;
   CompareState _state = CompareState.idle;
   String? _errorMessage;
+  ProductSummaryDto? _summary;
+  Timer? _summaryTimer;
 
   String get productName => _productName;
   List<CompareRow> get rows => List.unmodifiable(_rows);
   CompareState get state => _state;
   String? get errorMessage => _errorMessage;
+  ProductSummaryDto? get summary => _summary;
 
   int _rowCounter = 0;
 
@@ -82,6 +90,7 @@ class CompareViewModel extends ChangeNotifier {
 
   void updateProductName(String name) {
     _productName = name;
+    _fetchSummaryDebounced(name);
     notifyListeners();
   }
 
@@ -164,6 +173,8 @@ class CompareViewModel extends ChangeNotifier {
       }
       _state = CompareState.saved;
       _errorMessage = null;
+      // Refresh summary after saving.
+      await _refreshSummary(_productName);
     } catch (_) {
       _state = CompareState.error;
       _errorMessage = 'save_failed';
@@ -175,6 +186,12 @@ class CompareViewModel extends ChangeNotifier {
     _state = CompareState.idle;
     _errorMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _summaryTimer?.cancel();
+    super.dispose();
   }
 
   // ── Private helpers ──────────────────────────────────────────────────────
@@ -211,5 +228,27 @@ class CompareViewModel extends ChangeNotifier {
     }).toList();
 
     notifyListeners();
+  }
+
+  void _fetchSummaryDebounced(String name) {
+    _summaryTimer?.cancel();
+    if (name.trim().isEmpty) {
+      _summary = null;
+      notifyListeners();
+      return;
+    }
+    _summaryTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => _refreshSummary(name),
+    );
+  }
+
+  Future<void> _refreshSummary(String name) async {
+    if (name.trim().isEmpty) return;
+    final summary = await _getSummary.execute(name.trim());
+    if (_productName.trim() == name.trim()) {
+      _summary = summary;
+      notifyListeners();
+    }
   }
 }

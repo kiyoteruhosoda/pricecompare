@@ -312,6 +312,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get compareBasePriceRequired => '販売価格を入力してください';
   @override
   String get compareQuantityRequired => '数量を入力してください';
+  @override
+  String get compareViewHistory => '履歴を見る';
+  @override
+  String get compareHistorySummaryCount => '件';
+  @override
+  String get compareHistorySummaryMinUnitPrice => '最安単価';
+  @override
+  String get compareHistorySummaryLatest => '最新記録';
+  @override
+  String get compareCurrentUnitPrice => '現在の単価';
 
   // ─── Product list screen ──────────────────────────────────────────────
   @override

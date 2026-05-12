@@ -200,6 +200,11 @@ abstract class AppLocalizations {
   String get compareSaveErrorNameRequired;
   String get compareBasePriceRequired;
   String get compareQuantityRequired;
+  String get compareViewHistory;
+  String get compareHistorySummaryCount;
+  String get compareHistorySummaryMinUnitPrice;
+  String get compareHistorySummaryLatest;
+  String get compareCurrentUnitPrice;
 
   // ─── Product list screen ──────────────────────────────────────────────
   String get productsTitle;
