@@ -13,18 +13,17 @@ class AppConfig {
   // ─── Identity ─────────────────────────────────────────────────────
   /// Display name shown in the MaterialApp title, drawer header,
   /// and About page.
-  static const String appName = 'FlutterBase';
+  static const String appName = 'PriceCompare';
 
   /// One-line description shown on the About page.
-  static const String appDescription =
-      'Flutter base app following the DADS design system';
+  static const String appDescription = '複数商品の単価を即時計算・比較するアプリ';
 
   /// Short tagline rendered under the app name in the drawer.
-  static const String appTagline = 'DADS Design System';
+  static const String appTagline = '価格比較 & 履歴管理';
 
   // ─── Home page copy ───────────────────────────────────────────────
-  static const String homeSubtitle = 'DADS Design System App';
-  static const String homeCardTitle = 'DADS Design System';
+  static const String homeSubtitle = '価格比較 & 履歴管理';
+  static const String homeCardTitle = 'PriceCompare';
 
   // ─── Typography ───────────────────────────────────────────────────
   /// Must exactly match the `family:` entry in `pubspec.yaml`'s fonts
