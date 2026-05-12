@@ -46,10 +46,18 @@ class ProductDao {
   }
 
   Future<void> upsert(ProductRow row) async {
+    // INSERT OR IGNORE preserves the existing row (and its FK-cascaded histories).
+    // The subsequent UPDATE then applies only the mutable fields.
     await _db.insert(
       _table,
       row.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+    await _db.update(
+      _table,
+      {'name': row.name, 'updated_at': row.updatedAt},
+      where: 'id = ?',
+      whereArgs: [row.id],
     );
   }
 
