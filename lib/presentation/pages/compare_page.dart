@@ -21,8 +21,10 @@ class _ComparePageState extends State<ComparePage> {
   void initState() {
     super.initState();
     _vm = sl<CompareViewModel>();
+    // On re-mount the singleton VM may already hold rows with values;
+    // rehydrate controllers so the displayed text matches the stored state.
     for (final row in _vm.rows) {
-      _controllers[row.id] = _RowControllers();
+      _controllers[row.id] = _RowControllers.fromRow(row);
     }
   }
 
@@ -444,11 +446,32 @@ class _CompareRowCard extends StatelessWidget {
 // ─── Controllers holder ───────────────────────────────────────────────────────
 
 class _RowControllers {
-  final name = TextEditingController();
-  final basePrice = TextEditingController();
-  final saleDiscount = TextEditingController();
-  final points = TextEditingController();
-  final quantity = TextEditingController();
+  _RowControllers()
+      : name = TextEditingController(),
+        basePrice = TextEditingController(),
+        saleDiscount = TextEditingController(),
+        points = TextEditingController(),
+        quantity = TextEditingController();
+
+  factory _RowControllers.fromRow(CompareRow row) {
+    return _RowControllers()
+      ..name.text = row.productName
+      ..basePrice.text = _fmt(row.basePrice)
+      ..saleDiscount.text = row.saleDiscount == 0 ? '' : _fmt(row.saleDiscount)
+      ..points.text = row.points == 0 ? '' : _fmt(row.points)
+      ..quantity.text = _fmt(row.quantity);
+  }
+
+  final TextEditingController name;
+  final TextEditingController basePrice;
+  final TextEditingController saleDiscount;
+  final TextEditingController points;
+  final TextEditingController quantity;
+
+  static String _fmt(double? v) {
+    if (v == null) return '';
+    return v == v.truncateToDouble() ? v.toInt().toString() : v.toString();
+  }
 
   void dispose() {
     name.dispose();
