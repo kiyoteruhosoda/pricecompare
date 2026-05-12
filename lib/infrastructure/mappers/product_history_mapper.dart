@@ -1,7 +1,7 @@
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
-import 'package:flutterbase/infrastructure/db/sqlite/rows/product_history_row.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/rows/product_history_row.dart';
 
 class ProductHistoryMapper {
   const ProductHistoryMapper._();

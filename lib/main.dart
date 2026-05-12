@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutterbase/app/bootstrap/app_widget.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/shared/licenses/app_license_registry.dart';
+import 'package:pricecompare/app/bootstrap/app_widget.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/shared/licenses/app_license_registry.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

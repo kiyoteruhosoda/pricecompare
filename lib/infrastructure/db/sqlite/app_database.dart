@@ -1,4 +1,4 @@
-import 'package:flutterbase/infrastructure/db/sqlite/migrations/migration_v1.dart';
+import 'package:pricecompare/infrastructure/db/sqlite/migrations/migration_v1.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
-import 'package:flutterbase/presentation/pages/history_detail_page.dart';
-import 'package:flutterbase/presentation/pages/main_page.dart';
-import 'package:flutterbase/presentation/pages/product_detail_page.dart';
-import 'package:flutterbase/presentation/pages/system/about_page.dart';
-import 'package:flutterbase/presentation/pages/system/debug_page.dart';
-import 'package:flutterbase/presentation/pages/system/logs_page.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/logging/app_logger.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
+import 'package:pricecompare/presentation/pages/history_detail_page.dart';
+import 'package:pricecompare/presentation/pages/main_page.dart';
+import 'package:pricecompare/presentation/pages/product_detail_page.dart';
+import 'package:pricecompare/presentation/pages/system/about_page.dart';
+import 'package:pricecompare/presentation/pages/system/debug_page.dart';
+import 'package:pricecompare/presentation/pages/system/logs_page.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/logging/app_logger.dart';
 
 /// Named route definitions.
 class AppRouter {

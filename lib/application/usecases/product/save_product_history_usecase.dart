@@ -1,11 +1,11 @@
-import 'package:flutterbase/application/dto/save_product_history_input.dart';
-import 'package:flutterbase/domain/entities/product.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/domain/repositories/product_repository.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
-import 'package:flutterbase/shared/errors/app_error.dart';
-import 'package:flutterbase/shared/utils/uuid_generator.dart';
+import 'package:pricecompare/application/dto/save_product_history_input.dart';
+import 'package:pricecompare/domain/entities/product.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/domain/repositories/product_repository.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
+import 'package:pricecompare/shared/errors/app_error.dart';
+import 'package:pricecompare/shared/utils/uuid_generator.dart';
 
 class SaveProductHistoryUseCase {
   const SaveProductHistoryUseCase(this._repository);

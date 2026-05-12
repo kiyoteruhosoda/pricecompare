@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutterbase/application/dto/product_summary_dto.dart';
-import 'package:flutterbase/application/dto/save_product_history_input.dart';
-import 'package:flutterbase/application/usecases/product/get_product_summary_usecase.dart';
-import 'package:flutterbase/application/usecases/product/save_product_history_usecase.dart';
+import 'package:pricecompare/application/dto/product_summary_dto.dart';
+import 'package:pricecompare/application/dto/save_product_history_input.dart';
+import 'package:pricecompare/application/usecases/product/get_product_summary_usecase.dart';
+import 'package:pricecompare/application/usecases/product/save_product_history_usecase.dart';
 
 class CompareRow {
   CompareRow({
     required this.id,
-    this.productName = '',
+    this.storeName = '',
     this.basePrice,
     this.saleDiscount = 0,
     this.points = 0,
@@ -17,11 +17,10 @@ class CompareRow {
     this.effectivePrice,
     this.unitPrice,
     this.isBest = false,
-    this.summary,
   });
 
   final String id;
-  String productName;
+  String storeName;
   double? basePrice;
   double saleDiscount;
   double points;
@@ -29,10 +28,9 @@ class CompareRow {
   double? effectivePrice;
   double? unitPrice;
   bool isBest;
-  ProductSummaryDto? summary;
 
   CompareRow copyWith({
-    String? productName,
+    String? storeName,
     double? basePrice,
     bool clearBasePrice = false,
     double? saleDiscount,
@@ -44,22 +42,18 @@ class CompareRow {
     double? unitPrice,
     bool clearUnitPrice = false,
     bool? isBest,
-    ProductSummaryDto? summary,
-    bool clearSummary = false,
   }) {
     return CompareRow(
       id: id,
-      productName: productName ?? this.productName,
+      storeName: storeName ?? this.storeName,
       basePrice: clearBasePrice ? null : (basePrice ?? this.basePrice),
       saleDiscount: saleDiscount ?? this.saleDiscount,
       points: points ?? this.points,
       quantity: clearQuantity ? null : (quantity ?? this.quantity),
-      effectivePrice: clearEffectivePrice
-          ? null
-          : (effectivePrice ?? this.effectivePrice),
+      effectivePrice:
+          clearEffectivePrice ? null : (effectivePrice ?? this.effectivePrice),
       unitPrice: clearUnitPrice ? null : (unitPrice ?? this.unitPrice),
       isBest: isBest ?? this.isBest,
-      summary: clearSummary ? null : (summary ?? this.summary),
     );
   }
 }
@@ -67,29 +61,37 @@ class CompareRow {
 enum CompareState { idle, saving, saved, error }
 
 class CompareViewModel extends ChangeNotifier {
-  CompareViewModel(
-    this._saveHistory,
-    this._getSummary,
-  ) {
+  CompareViewModel(this._saveHistory, this._getSummary) {
     _rows = [_newRow(), _newRow()];
   }
 
   final SaveProductHistoryUseCase _saveHistory;
   final GetProductSummaryUseCase _getSummary;
 
+  String _productName = '';
   late List<CompareRow> _rows;
   CompareState _state = CompareState.idle;
   String? _errorMessage;
+  ProductSummaryDto? _summary;
+  Timer? _summaryTimer;
 
+  String get productName => _productName;
   List<CompareRow> get rows => List.unmodifiable(_rows);
   CompareState get state => _state;
   String? get errorMessage => _errorMessage;
+  ProductSummaryDto? get summary => _summary;
 
   int _rowCounter = 0;
 
   CompareRow _newRow() {
     _rowCounter++;
     return CompareRow(id: 'row_$_rowCounter');
+  }
+
+  void updateProductName(String name) {
+    _productName = name;
+    _fetchSummaryDebounced(name);
+    notifyListeners();
   }
 
   void addRow() {
@@ -104,9 +106,9 @@ class CompareViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateProductName(String id, String name) {
-    _updateRow(id, (r) => r.copyWith(productName: name));
-    _fetchSummaryDebounced(id, name);
+  void updateStoreName(String id, String name) {
+    _updateRow(id, (r) => r.copyWith(storeName: name));
+    notifyListeners();
   }
 
   void updateBasePrice(String id, double? value) {
@@ -139,22 +141,14 @@ class CompareViewModel extends ChangeNotifier {
     _recalculate();
   }
 
-  Future<void> saveRow(String id) async {
-    final row = _rows.firstWhere((r) => r.id == id);
-    if (row.productName.trim().isEmpty) {
+  Future<void> saveAll() async {
+    final saveable = _rows
+        .where((r) => r.basePrice != null && r.quantity != null && r.quantity! > 0)
+        .toList();
+    if (saveable.isEmpty) return;
+
+    if (_productName.trim().isEmpty) {
       _errorMessage = 'name_required';
-      _state = CompareState.error;
-      notifyListeners();
-      return;
-    }
-    if (row.basePrice == null) {
-      _errorMessage = 'base_price_required';
-      _state = CompareState.error;
-      notifyListeners();
-      return;
-    }
-    if (row.quantity == null || row.quantity! <= 0) {
-      _errorMessage = 'quantity_required';
       _state = CompareState.error;
       notifyListeners();
       return;
@@ -164,18 +158,23 @@ class CompareViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _saveHistory.execute(
-        SaveProductHistoryInput(
-          productName: row.productName,
-          basePrice: row.basePrice!,
-          saleDiscount: row.saleDiscount,
-          points: row.points,
-          quantity: row.quantity!,
-        ),
-      );
+      for (final row in saveable) {
+        await _saveHistory.execute(
+          SaveProductHistoryInput(
+            productName: _productName.trim(),
+            storeName:
+                row.storeName.trim().isEmpty ? null : row.storeName.trim(),
+            basePrice: row.basePrice!,
+            saleDiscount: row.saleDiscount,
+            points: row.points,
+            quantity: row.quantity!,
+          ),
+        );
+      }
       _state = CompareState.saved;
       _errorMessage = null;
-      await _refreshSummary(row.id, row.productName);
+      // Refresh summary after saving.
+      await _refreshSummary(_productName);
     } catch (_) {
       _state = CompareState.error;
       _errorMessage = 'save_failed';
@@ -189,7 +188,13 @@ class CompareViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Private helpers ──────────────────────────────────────────────────
+  @override
+  void dispose() {
+    _summaryTimer?.cancel();
+    super.dispose();
+  }
+
+  // ── Private helpers ──────────────────────────────────────────────────────
 
   void _updateRow(String id, CompareRow Function(CompareRow) transform) {
     _rows = _rows.map((r) => r.id == id ? transform(r) : r).toList();
@@ -225,34 +230,25 @@ class CompareViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  final Map<String, Timer> _summaryTimers = {};
-
-  @override
-  void dispose() {
-    for (final t in _summaryTimers.values) {
-      t.cancel();
+  void _fetchSummaryDebounced(String name) {
+    _summaryTimer?.cancel();
+    if (name.trim().isEmpty) {
+      _summary = null;
+      notifyListeners();
+      return;
     }
-    super.dispose();
-  }
-
-  void _fetchSummaryDebounced(String rowId, String name) {
-    _summaryTimers[rowId]?.cancel();
-    _summaryTimers[rowId] = Timer(
+    _summaryTimer = Timer(
       const Duration(milliseconds: 400),
-      () => _refreshSummary(rowId, name),
+      () => _refreshSummary(name),
     );
   }
 
-  Future<void> _refreshSummary(String rowId, String name) async {
-    final summary = await _getSummary.execute(name);
-    _updateRow(
-      rowId,
-      (r) => r.productName == name
-          ? (summary != null
-              ? r.copyWith(summary: summary)
-              : r.copyWith(clearSummary: true))
-          : r,
-    );
-    notifyListeners();
+  Future<void> _refreshSummary(String name) async {
+    if (name.trim().isEmpty) return;
+    final summary = await _getSummary.execute(name.trim());
+    if (_productName.trim() == name.trim()) {
+      _summary = summary;
+      notifyListeners();
+    }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutterbase/domain/value_objects/product_history_id.dart';
-import 'package:flutterbase/domain/value_objects/product_id.dart';
+import 'package:pricecompare/domain/value_objects/product_history_id.dart';
+import 'package:pricecompare/domain/value_objects/product_id.dart';
 
 class ProductHistory extends Equatable {
   const ProductHistory({

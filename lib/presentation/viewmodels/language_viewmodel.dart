@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/application/usecases/language/get_language_preference_usecase.dart';
-import 'package:flutterbase/application/usecases/language/set_language_preference_usecase.dart';
-import 'package:flutterbase/shared/logging/app_logger.dart';
-import 'package:flutterbase/shared/value_objects/app_language.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/application/usecases/language/get_language_preference_usecase.dart';
+import 'package:pricecompare/application/usecases/language/set_language_preference_usecase.dart';
+import 'package:pricecompare/shared/logging/app_logger.dart';
+import 'package:pricecompare/shared/value_objects/app_language.dart';
 
 /// Manages the app-wide language preference and resolves it to a Flutter
 /// [Locale]. [AppLanguage.system] yields `null`, which instructs

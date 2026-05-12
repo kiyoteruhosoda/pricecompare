@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/shared/build_info.dart';
-import 'package:flutterbase/shared/config/app_config.dart';
-import 'package:flutterbase/shared/theme/theme.dart';
+import 'package:pricecompare/shared/build_info.dart';
+import 'package:pricecompare/shared/config/app_config.dart';
+import 'package:pricecompare/shared/theme/theme.dart';
 
 /// Opens the built-in [showLicensePage] with the app's branding applied.
 ///

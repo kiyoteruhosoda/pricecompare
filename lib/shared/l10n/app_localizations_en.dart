@@ -1,4 +1,4 @@
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
 
 /// English localisations.
 class AppLocalizationsEn extends AppLocalizations {
@@ -298,17 +298,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get compareUnitPrice => 'Unit price';
   @override
-  String get compareAddRow => 'Add';
+  String get compareStoreName => 'Store name';
+  @override
+  String get compareAddRow => 'Add store';
   @override
   String get compareDeleteRow => 'Remove';
   @override
-  String get compareAddToHistory => 'Save to history';
-  @override
-  String get compareViewHistory => 'View history';
+  String get compareSave => 'Save';
   @override
   String get compareSaveSuccess => 'Saved to history';
   @override
   String get compareSaveErrorNameRequired => 'Product name is required to save';
+  @override
+  String get compareBasePriceRequired => 'Price is required';
+  @override
+  String get compareQuantityRequired => 'Quantity is required';
+  @override
+  String get compareViewHistory => 'View history';
   @override
   String get compareHistorySummaryCount => 'records';
   @override
@@ -316,9 +322,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get compareHistorySummaryLatest => 'Latest';
   @override
-  String get compareBasePriceRequired => 'Price is required';
-  @override
-  String get compareQuantityRequired => 'Quantity is required';
+  String get compareCurrentUnitPrice => 'Current unit price';
 
   // ─── Product list screen ──────────────────────────────────────────────
   @override

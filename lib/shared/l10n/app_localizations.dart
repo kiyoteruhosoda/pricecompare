@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutterbase/shared/l10n/app_localizations_en.dart';
-import 'package:flutterbase/shared/l10n/app_localizations_ja.dart';
+import 'package:pricecompare/shared/l10n/app_localizations_en.dart';
+import 'package:pricecompare/shared/l10n/app_localizations_ja.dart';
 
 /// Centralised, locale-aware string resources.
 ///
@@ -192,17 +192,19 @@ abstract class AppLocalizations {
   String get compareQuantity;
   String get compareEffectivePrice;
   String get compareUnitPrice;
+  String get compareStoreName;
   String get compareAddRow;
   String get compareDeleteRow;
-  String get compareAddToHistory;
-  String get compareViewHistory;
+  String get compareSave;
   String get compareSaveSuccess;
   String get compareSaveErrorNameRequired;
+  String get compareBasePriceRequired;
+  String get compareQuantityRequired;
+  String get compareViewHistory;
   String get compareHistorySummaryCount;
   String get compareHistorySummaryMinUnitPrice;
   String get compareHistorySummaryLatest;
-  String get compareBasePriceRequired;
-  String get compareQuantityRequired;
+  String get compareCurrentUnitPrice;
 
   // ─── Product list screen ──────────────────────────────────────────────
   String get productsTitle;

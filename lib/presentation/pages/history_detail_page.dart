@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutterbase/app/di/service_locator.dart';
-import 'package:flutterbase/domain/entities/product_history.dart';
-import 'package:flutterbase/presentation/viewmodels/history_detail_viewmodel.dart';
-import 'package:flutterbase/shared/l10n/app_localizations.dart';
-import 'package:flutterbase/shared/theme/theme.dart';
+import 'package:pricecompare/app/di/service_locator.dart';
+import 'package:pricecompare/domain/entities/product_history.dart';
+import 'package:pricecompare/presentation/viewmodels/history_detail_viewmodel.dart';
+import 'package:pricecompare/shared/l10n/app_localizations.dart';
+import 'package:pricecompare/shared/theme/theme.dart';
 import 'package:intl/intl.dart';
 
 class HistoryDetailPage extends StatefulWidget {

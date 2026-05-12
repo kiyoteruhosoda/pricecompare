@@ -1,4 +1,4 @@
-import 'package:flutterbase/shared/value_objects/app_language.dart';
+import 'package:pricecompare/shared/value_objects/app_language.dart';
 
 /// Persists and retrieves the user's language preference.
 ///
