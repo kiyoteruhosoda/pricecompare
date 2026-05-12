@@ -7,21 +7,37 @@ import 'package:flutterbase/application/usecases/debug/set_debug_mode_usecase.da
 import 'package:flutterbase/application/usecases/debug/set_log_level_usecase.dart';
 import 'package:flutterbase/application/usecases/language/get_language_preference_usecase.dart';
 import 'package:flutterbase/application/usecases/language/set_language_preference_usecase.dart';
+import 'package:flutterbase/application/usecases/product/delete_product_history_usecase.dart';
+import 'package:flutterbase/application/usecases/product/delete_product_usecase.dart';
+import 'package:flutterbase/application/usecases/product/get_product_histories_usecase.dart';
+import 'package:flutterbase/application/usecases/product/get_product_history_usecase.dart';
+import 'package:flutterbase/application/usecases/product/get_product_summary_usecase.dart';
+import 'package:flutterbase/application/usecases/product/save_product_history_usecase.dart';
+import 'package:flutterbase/application/usecases/product/search_products_usecase.dart';
 import 'package:flutterbase/application/usecases/theme/get_theme_preference_usecase.dart';
 import 'package:flutterbase/application/usecases/theme/set_theme_preference_usecase.dart';
 import 'package:flutterbase/domain/repositories/app_info_repository.dart';
 import 'package:flutterbase/domain/repositories/debug_settings_repository.dart';
 import 'package:flutterbase/domain/repositories/language_preference_repository.dart';
+import 'package:flutterbase/domain/repositories/product_repository.dart';
 import 'package:flutterbase/domain/repositories/theme_preference_repository.dart';
+import 'package:flutterbase/infrastructure/db/sqlite/app_database.dart';
+import 'package:flutterbase/infrastructure/db/sqlite/dao/product_dao.dart';
+import 'package:flutterbase/infrastructure/db/sqlite/dao/product_history_dao.dart';
 import 'package:flutterbase/infrastructure/logging/persistent_app_logger.dart';
 import 'package:flutterbase/infrastructure/repositories/package_info_app_info_repository.dart';
 import 'package:flutterbase/infrastructure/repositories/shared_preferences_debug_settings_repository.dart';
 import 'package:flutterbase/infrastructure/repositories/shared_preferences_language_preference_repository.dart';
 import 'package:flutterbase/infrastructure/repositories/shared_preferences_theme_preference_repository.dart';
+import 'package:flutterbase/infrastructure/repositories/sqlite_product_repository.dart';
 import 'package:flutterbase/presentation/viewmodels/about_viewmodel.dart';
+import 'package:flutterbase/presentation/viewmodels/compare_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/debug_settings_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/debug_viewmodel.dart';
+import 'package:flutterbase/presentation/viewmodels/history_detail_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/language_viewmodel.dart';
+import 'package:flutterbase/presentation/viewmodels/product_detail_viewmodel.dart';
+import 'package:flutterbase/presentation/viewmodels/product_list_viewmodel.dart';
 import 'package:flutterbase/presentation/viewmodels/theme_viewmodel.dart';
 import 'package:flutterbase/shared/logging/app_logger.dart';
 
@@ -117,11 +133,75 @@ Future<void> setupServiceLocator() async {
   );
 
   // ─── Infrastructure (DB, Repositories) ──────────────────────────────
-  // TODO: add when features are implemented
-  // sl.registerSingleton<AppDatabase>(AppDatabase());
 
-  // ─── Application (UseCases) ─────────────────────────────────────────
-  // TODO: add when features are implemented
+  final appDb = AppDatabase.instance;
+  await appDb.init();
+  sl<AppLogger>().info('[DI] AppDatabase ready');
+
+  final productDao = ProductDao(appDb.db);
+  final historyDao = ProductHistoryDao(appDb.db);
+
+  sl.registerSingleton<ProductRepository>(
+    SqliteProductRepository(
+      productDao: productDao,
+      historyDao: historyDao,
+    ),
+  );
+
+  // ─── Product use cases ───────────────────────────────────────────────
+
+  sl.registerFactory<SaveProductHistoryUseCase>(
+    () => SaveProductHistoryUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<SearchProductsUseCase>(
+    () => SearchProductsUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<GetProductHistoriesUseCase>(
+    () => GetProductHistoriesUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<GetProductHistoryUseCase>(
+    () => GetProductHistoryUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<DeleteProductUseCase>(
+    () => DeleteProductUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<DeleteProductHistoryUseCase>(
+    () => DeleteProductHistoryUseCase(sl<ProductRepository>()),
+  );
+  sl.registerFactory<GetProductSummaryUseCase>(
+    () => GetProductSummaryUseCase(sl<ProductRepository>()),
+  );
+
+  // ─── Product ViewModels ──────────────────────────────────────────────
+
+  // Lazy singletons so tab state persists across navigation
+  sl.registerLazySingleton<CompareViewModel>(
+    () => CompareViewModel(
+      sl<SaveProductHistoryUseCase>(),
+      sl<GetProductSummaryUseCase>(),
+    ),
+  );
+  sl.registerLazySingleton<ProductListViewModel>(
+    () => ProductListViewModel(
+      sl<SearchProductsUseCase>(),
+      sl<DeleteProductUseCase>(),
+      sl<ProductRepository>(),
+    ),
+  );
+
+  // Factories: created fresh per navigation push
+  sl.registerFactory<ProductDetailViewModel>(
+    () => ProductDetailViewModel(
+      sl<GetProductHistoriesUseCase>(),
+      sl<DeleteProductHistoryUseCase>(),
+    ),
+  );
+  sl.registerFactory<HistoryDetailViewModel>(
+    () => HistoryDetailViewModel(
+      sl<GetProductHistoryUseCase>(),
+      sl<DeleteProductHistoryUseCase>(),
+    ),
+  );
 
   sl<AppLogger>().info('[DI] Service locator setup complete');
 }
