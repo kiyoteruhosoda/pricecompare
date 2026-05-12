@@ -19,6 +19,7 @@ class _ComparePageState extends State<ComparePage> {
   late final CompareViewModel _vm;
   final TextEditingController _productNameCtrl = TextEditingController();
   final Map<String, _RowControllers> _rowCtrlMap = {};
+  final ScrollController _scrollCtrl = ScrollController();
 
   @override
   void initState() {
@@ -33,10 +34,24 @@ class _ComparePageState extends State<ComparePage> {
   @override
   void dispose() {
     _productNameCtrl.dispose();
+    _scrollCtrl.dispose();
     for (final c in _rowCtrlMap.values) {
       c.dispose();
     }
     super.dispose();
+  }
+
+  void _addRowAndScroll() {
+    _vm.addRow();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   _RowControllers _ctrlFor(String id) =>
@@ -54,6 +69,7 @@ class _ComparePageState extends State<ComparePage> {
         return Stack(
           children: [
             ListView(
+              controller: _scrollCtrl,
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pageMargin,
                 AppSpacing.pageMargin,
@@ -96,7 +112,7 @@ class _ComparePageState extends State<ComparePage> {
                 ..._vm.rows.map((row) {
                   final ctrl = _ctrlFor(row.id);
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: _StoreRowCard(
                       row: row,
                       controllers: ctrl,
@@ -147,7 +163,7 @@ class _ComparePageState extends State<ComparePage> {
                   const SizedBox(height: AppSpacing.sm),
                   FloatingActionButton.extended(
                     heroTag: 'add',
-                    onPressed: _vm.addRow,
+                    onPressed: _addRowAndScroll,
                     icon: const Icon(Icons.add),
                     label: Text(l10n.compareAddRow),
                     backgroundColor:
@@ -422,7 +438,12 @@ class _StoreRowCard extends StatelessWidget {
             )
           : null,
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.componentPadding),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.sm,
+          AppSpacing.md,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -430,7 +451,7 @@ class _StoreRowCard extends StatelessWidget {
             Row(
               children: [
                 if (isBest) ...[
-                  Icon(Icons.star, color: AppColors.statusSuccess, size: 20),
+                  Icon(Icons.star, color: AppColors.statusSuccess, size: 16),
                   const SizedBox(width: AppSpacing.xs),
                 ],
                 Expanded(
@@ -438,7 +459,7 @@ class _StoreRowCard extends StatelessWidget {
                     isBest
                         ? '${_formatUnitPrice(row.unitPrice)}  最安値'
                         : (_hasResult ? _formatUnitPrice(row.unitPrice) : ''),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: isBest
                               ? AppColors.statusSuccess
                               : colorScheme.onSurfaceVariant,
@@ -449,7 +470,7 @@ class _StoreRowCard extends StatelessWidget {
                 ),
                 if (canDelete)
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, size: 18),
                     tooltip: l10n.compareDeleteRow,
                     onPressed: onDelete,
                     padding: EdgeInsets.zero,
@@ -460,7 +481,7 @@ class _StoreRowCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
 
             // ── 店舗名 ─────────────────────────────────────────────
             TextField(
@@ -469,20 +490,41 @@ class _StoreRowCard extends StatelessWidget {
                 labelText: l10n.compareStoreName,
                 border: const OutlineInputBorder(),
                 isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.sm,
+                ),
               ),
               textInputAction: TextInputAction.next,
               onChanged: onStoreNameChanged,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
 
-            // ── 販売価格 ───────────────────────────────────────────
-            _numField(
-              context,
-              label: l10n.compareBasePrice,
-              controller: controllers.basePrice,
-              onChanged: (v) => onBasePriceChanged(_parseDouble(v)),
+            // ── 販売価格 / 数量 ────────────────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _numField(
+                    context,
+                    label: l10n.compareBasePrice,
+                    controller: controllers.basePrice,
+                    onChanged: (v) => onBasePriceChanged(_parseDouble(v)),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  flex: 2,
+                  child: _numField(
+                    context,
+                    label: l10n.compareQuantity,
+                    controller: controllers.quantity,
+                    onChanged: (v) => onQuantityChanged(_parseDouble(v)),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
 
             // ── セール値引き / ポイント ────────────────────────────
             Row(
@@ -506,21 +548,12 @@ class _StoreRowCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-
-            // ── 数量 ───────────────────────────────────────────────
-            _numField(
-              context,
-              label: l10n.compareQuantity,
-              controller: controllers.quantity,
-              onChanged: (v) => onQuantityChanged(_parseDouble(v)),
-            ),
 
             // ── 計算結果 ───────────────────────────────────────────
             if (_hasResult) ...[
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               const Divider(height: 1),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               _resultRow(
                 context,
                 label: l10n.compareEffectivePrice,
@@ -554,6 +587,10 @@ class _StoreRowCard extends StatelessWidget {
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
